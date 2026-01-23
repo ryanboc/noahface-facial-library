@@ -1,4 +1,4 @@
-h1 align="center">👤 NoahFace Event Sync</h1>
+<h1 align="center">👤 NoahFace Event Sync</h1>
 
 <p align="center">
   A Laravel middleware application for receiving and processing real-time event notifications from NoahFace access points.
