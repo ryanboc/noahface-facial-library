@@ -1,191 +1,204 @@
-NoahFace Event Sync (Laravel)
+h1 align="center">👤 NoahFace Event Sync</h1>
 
-This Laravel project provides a simple webhook endpoint for receiving event notifications from NoahFace
-. NoahFace devices (time‑clocks, access control screens or mobile apps) can forward user events to your own systems via a custom notification. This application listens for those events and can be extended to integrate with payroll, ERP or other internal services.
+<p align="center">
+  A Laravel middleware application for receiving and processing real-time event notifications from NoahFace access points.
+</p>
 
-Overview
+<p align="center">
+  <img alt="Laravel" src="https://img.shields.io/badge/Laravel-Framework-FF2D20?logo=laravel&logoColor=white">
+  <img alt="PHP" src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php&logoColor=white">
+  <img alt="Ngrok" src="https://img.shields.io/badge/Ngrok-Tunnel-1F1E25?logo=ngrok&logoColor=white">
+  <img alt="Status" src="https://img.shields.io/badge/Status-Active-22C55E">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-64748B">
+</p>
 
-NoahFace exposes an Event Notification API
- which forwards details of each user interaction via HTTP. Events include identifiers (such as eventid, userid and number), timestamps, organisational and device information, event type, and optional detail fields
+---
 
-. Your webhook must return an HTTP 200 status quickly (ideally <10 s) – otherwise the event will be re‑sent using an exponential backoff schedule. NoahFace supports Basic, Bearer token and OAuth 2.0 authentication
+## ✨ Highlights
+- 📡 **Real-time Webhook:** Listens for clock-ins, access grants, and user events.
+- 🔐 **Secure:** Implements Basic Authentication for NoahFace verification.
+- 🚇 **Dev Friendly:** tailored instructions for **Ngrok** local development.
+- ⚡ **Fast Response:** Optimized to return `200 OK` < 10s to prevent retry loops.
+- 📝 **Log & Store:** Ready-to-use controller structure for logging or database persistence.
 
-; this project uses Basic Auth for simplicity.
+---
 
-Prerequisites
+## compass Table of Contents
+- [Overview](#-overview)
+- [Tech Stack](#-tech-stack)
+- [Requirements](#-requirements)
+- [Getting Started](#-getting-started)
+- [Local Development (Ngrok)](#-local-development-ngrok)
+- [NoahFace Configuration](#-noahface-configuration)
+- [Event Workflow](#-event-workflow)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
 
-PHP ≥ 8.1 with required extensions for Laravel.
+---
 
-Composer for dependency management.
+## ℹ️ Overview
+[cite_start]NoahFace devices (time‑clocks, access control screens, or mobile apps) forward user interactions to your system via **Custom Notifications**. [cite: 3]
 
-A database supported by Laravel (e.g. MySQL, PostgreSQL or SQLite) if you intend to persist data.
+This application acts as the endpoint for those notifications. It handles:
+1.  **Authentication:** Validating the request comes from NoahFace.
+2.  **Ingestion:** accepting the JSON payload (User ID, Temperature, Event Type, etc.).
+3.  [cite_start]**Response:** sending a strict `200 OK` to confirm receipt. [cite: 8]
 
-An ngrok
- account and the Ngrok CLI for exposing your local server to NoahFace.
+---
 
-Access to the NoahFace dashboard with permission to manage Access Points and Notifications.
+## 🧰 Tech Stack
+- **Framework:** Laravel 10/11
+- **Language:** PHP 8.1+
+- **Tunneling:** Ngrok (for local testing)
+- **Database:** MySQL/PostgreSQL (Optional for storage)
 
-Installation
+---
 
-Clone this repository and change into the project directory:
+## 📦 Requirements
+- PHP ≥ 8.1
+- Composer
+- Ngrok CLI (for exposing local server)
+- [cite_start]NoahFace Dashboard Access (Admin permissions) [cite: 16]
 
-git clone <your‑repo‑url>
+---
+
+## 🚀 Getting Started
+
+### 1) Clone the repository
+```bash
+git clone <your-repo-url>
 cd noahface-sync
 
+2) Install dependencies
+Bash
 
-Install PHP dependencies via Composer:
+composer install --prefer-dist --no-interaction
 
-composer install --prefer-dist --no-interaction --no-suggest
-
-
-Configure environment variables:
-
-Copy .env.example to .env:
+3) Setup environment
+Bash
 
 cp .env.example .env
+php artisan key:generate
 
+Update your .env with the credentials you want NoahFace to use:
+Code snippet
 
-Set your APP_NAME and APP_URL. When testing locally with ngrok, APP_URL should be the full ngrok URL (for example https://1498df2569d2.ngrok-free.app).
+APP_URL=http://localhost:8000
 
-Set up database credentials (DB_* variables) if you intend to store events.
-
-Define the Basic Auth credentials that NoahFace will use. For example:
-
+# NoahFace Authentication Credentials
 NOAHFACE_USERNAME=developer
 NOAHFACE_PASSWORD=yourStrongPassword
 
+4) Migrate database (Optional)
 
-Generate an application key:
-
-php artisan key:generate
-
-
-Migrate the database (optional). If you have created database tables to persist events, run:
+If you are storing events in a database table:
+Bash
 
 php artisan migrate
 
-Running the application locally
+🚇 Local Development (Ngrok)
 
-Start the Laravel development server:
+Since NoahFace is a cloud service, it cannot reach localhost. You must use Ngrok to tunnel traffic.
 
-php artisan serve --host=0.0.0.0 --port=8000
+1. Start Laravel
+Bash
 
+php artisan serve --port=8000
 
-The API endpoint for NoahFace will be available at http://localhost:8000/api/noahface/event. When ngrok forwards to your local machine, NoahFace will call the URL https://<ngrok-domain>/api/noahface/event using the POST method with a JSON payload
+2. Start Ngrok
 
-.
-
-Exposing your local server with ngrok
-
-Install the ngrok CLI and authenticate it (see the ngrok documentation
-).
-
-Launch ngrok, forwarding port 8000 to the internet. Run this in a separate terminal:
+In a separate terminal:
+Bash
 
 ngrok http 8000
 
+Copy the forwarding URL (e.g., https://1498df2569d2.ngrok-free.app).
 
-ngrok will display a forwarding URL like https://1498df2569d2.ngrok-free.app 
-screenshot
- that points to your local Laravel server. Note this URL.
+3. Update Environment
 
-Update APP_URL in your .env file to match the ngrok URL so that any URL generation (e.g. in notifications) is correct.
+Update APP_URL in your .env to match the dynamic Ngrok URL if your app generates absolute links.
 
-Configuring NoahFace
+🛠️ NoahFace Configuration
 
-To send event notifications from NoahFace to your application:
+To connect your device to this app, configure a Notification in the NoahFace Dashboard.
 
-Log in to the NoahFace dashboard and navigate to your organisation and site (e.g. “Inglewood Farms”). Choose your access point or create one.
+Navigate to: Access Points → Notifications → + Add Notification
+Setting	Value	Notes
+Type	
 
-Add a custom notification:
+Custom
+	
+Method	
 
-Go to Access Points → Notifications and click Add Notification.
+POST
+	
+URL	https://[ngrok-id].ngrok-free.app/api/noahface/event	
 
-Set Type to Custom and Method to POST.
+Append /api/noahface/event to your Ngrok domain.
 
-In the Notification URL field, enter your ngrok URL followed by /api/noahface/event, e.g.:
+Security	
 
-https://1498df2569d2.ngrok-free.app/api/noahface/event.
+Basic
+	
+Username	developer	Must match NOAHFACE_USERNAME in .env
+Password	******	Must match NOAHFACE_PASSWORD in .env
 
-Choose Security → Basic and enter the username (developer) and password defined in your .env file. This will cause NoahFace to send an Authorization: Basic … header on each request.
+    ⚠️ Important: If using Ngrok Free Tier, your URL changes every restart. You must update the Notification URL in NoahFace every time you restart Ngrok. 
 
-Save the notification. You should see it listed in the notifications table; if the URL is invalid you may see errors such as 404 Not Found
-screenshot
-. Ensure the route exists and the ngrok tunnel is running.
+🗂️ Event Workflow
 
-Associate the notification with your access point so that events generated on the device are forwarded to your application.
+The following diagram illustrates how an event travels from the iPad/Device to your Laravel Controller.
+Code snippet
 
-Test the integration by performing a clock‑in or access event on the device. You can view incoming requests in your ngrok console and check Laravel logs (storage/logs/laravel.log) for processed events.
+sequenceDiagram
+    participant D as NoahFace Device
+    participant N as NoahFace Cloud
+    participant G as Ngrok Tunnel
+    participant L as Laravel App
 
-Handling events
+    Note over D, N: User Clocks In
+    D->>N: Sync Event Data
+    N->>G: POST /api/noahface/event (Basic Auth)
+    G->>L: Forward Request
+    L->>L: Authenticate & Validate
+    L->>L: Dispatch Job / Save to DB
+    L-->>N: 200 OK (Must be <10s)
 
-The application defines a route, typically in routes/api.php, to handle incoming notifications:
+Example Payload
 
-Route::post('/noahface/event', [\App\Http\Controllers\NoahFaceController::class, 'handleEvent']);
+Your controller receives a JSON payload similar to this:
 
-
-Your handleEvent method should:
-
-Authenticate the request using the NOAHFACE_USERNAME and NOAHFACE_PASSWORD values.
-
-Validate the payload. NoahFace sends a JSON body containing fields such as eventid, utc, time, org, site, device, type, userid, firstname, lastname, etc.
-
-. See the Event Notification API documentation
- for the full schema.
-
-Persist or process the data according to your business logic (e.g. store in a database, push to a queue or send to a downstream API). Because NoahFace expects a quick response, you should queue heavy work and immediately return a 200 OK response. If you return a non‑200 status, NoahFace will retry the notification using exponential backoff
-
-.
-
-The example JSON below shows a typical payload from NoahFace:
+JSON
 
 {
   "eventid": "109997645",
-  "utc": "2018-12-21 21:03:47",
-  "time": "2018-12-22 08:03:47",
-  "org": "Acme Corporation",
-  "site": "Sydney",
-  "device": "Time Clock",
-  "devid": "",
+  "utc": "2026-01-23 21:03:47",
   "type": "clockin",
-  "detail": "",
-  "method": "face",
   "userid": "12345",
-  "number": "1001",
   "firstname": "Samara",
   "lastname": "Smith",
-  "usertype": "Engineer",
-  "cardnum": "",
-  "temperature": 36.9,
-  "elevated": false
+  "temperature": 36.9
 }
 
-Notes on security and error handling
+🧯 Troubleshooting
+🔴 404 Not Found
 
-Basic Auth credentials are transmitted over HTTPS in the Authorization header. Keep these credentials secret and rotate them regularly.
+    Cause: The URL in NoahFace does not match your current Ngrok session.
 
-If your application needs to serve multiple organisations, consider implementing token‑based or OAuth 2.0 authentication as described in NoahFace’s documentation
+    Fix: Check your terminal for the current https://....ngrok-free.app URL and paste it into NoahFace -> Notifications. 
 
-.
+🟠 Authentication Failed
 
-Always return 200 OK as quickly as possible after storing or queuing the event. Long‑running processing should be offloaded to a job queue. If your endpoint is unavailable or returns an error, NoahFace will retry over a period of up to 90 days
+    Cause: Mismatch between .env credentials and NoahFace settings.
 
-.
+    Fix: Ensure NOAHFACE_USERNAME and NOAHFACE_PASSWORD exactly match what you typed in the NoahFace "Security" section. 
 
-Troubleshooting
+🟡 Retries / Delays
 
-ngrok not forwarding: Ensure ngrok is running (ngrok http 8000) and that your firewall allows inbound connections.
+    Cause: App taking longer than 10s to respond.
 
-404 Not Found errors: Verify that the route /api/noahface/event exists and that APP_URL matches the ngrok URL. The screenshot from the NoahFace dashboard shows 404 errors when the URL is incorrect
-screenshot
-.
+    Fix: Ensure you return response()->json(['status' => 'ok']) immediately. Dispatch heavy processing (emailing, payroll sync) to a Queue Job. 
 
-Authentication errors: Double‑check the username and password configured in .env and in the NoahFace notification.
+📄 License
 
-Contributing
-
-Feel free to fork this repository and open pull requests. Please follow the PSR‑12 coding style and include tests for any new functionality.
-
-License
-
-This project is provided without any warranty. Consult your organisation’s legal team before deploying it in production. All trademarks are the property of their respective owners.
+Private / Internal project. All trademarks are the property of their respective owners.
