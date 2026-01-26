@@ -19,7 +19,8 @@
                     </a>
                     <div class="ml-10 space-x-4">
                         <a href="{{ route('awards.index') }}" class="text-gray-600 hover:text-blue-600">Awards</a>
-                        </div>
+                        <a href="{{ route('employees.index') }}" class="text-gray-600 hover:text-blue-600">Employees</a>
+                    </div>
                 </div>
             </div>
         </div>
