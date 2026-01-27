@@ -14,3 +14,5 @@ Route::get('attendance', [AttendanceController::class, 'index'])->name('attendan
 Route::resource('awards', AwardController::class);
 
 Route::resource('employees', EmployeeController::class);
+
+Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
