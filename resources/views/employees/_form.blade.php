@@ -27,8 +27,24 @@
             @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
         </div>
 
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+                Base Hourly Rate ($)
+            </label>
+            <input 
+                type="number" 
+                step="0.01" 
+                name="base_rate" 
+                value="{{ old('base_rate', $employee->base_rate ?? '') }}" 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                required>
+            @error('base_rate')
+                <p class="text-red-500 text-xs italic">{{ $message }}</p>
+            @enderror
+        </div>
+
         {{-- 2. NoahFace Link --}}
-        <div class="col-span-1 md:col-span-2">
+        <div class="mb-4">
             <label class="block text-gray-700 font-bold mb-2">NoahFace ID (User ID / Badge No)</label>
             <input type="text" name="noahface_id" value="{{ old('noahface_id', $employee->noahface_id ?? '') }}" 
                    class="w-full border p-2 rounded bg-yellow-50" placeholder="e.g. NF-10234" required>
