@@ -69,30 +69,40 @@ class AwardController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Award $award)
+    public function update(StoreAwardRequest $request, Award $award)
     {
         DB::transaction(function () use ($request, $award) {
-            // 1. Update Award Details
+            
+            // 1. Update Basic Details
             $award->update($request->safe()->only(['name', 'pay_guide_link']));
 
-            // 2. Update Conditions 
-            // updateOrCreate ensures we don't crash if conditions were missing previously
+            // 2. Update Conditions
             $award->conditions()->updateOrCreate(
                 ['award_id' => $award->id],
                 $request->input('conditions')
             );
 
-            // 3. Update Rates 
-            // Strategy: Delete all existing rates and re-insert new ones.
-            // This avoids complex ID matching logic for simple nested forms.
+            // 3. SYNC RATES (The Missing Part)
+            // Because your form manages the whole list, the safest way to update is:
+            // Wipe the old rates -> Re-create the new list.
             $award->rates()->delete();
-            $award->rates()->createMany($request->input('rates'));
+
+            // Get rates from the form
+            $rates = $request->input('rates', []);
+
+            // Optional: Filter out any empty rows just to be safe
+            $validRates = collect($rates)->filter(function ($rate) {
+                return !empty($rate['employment_type']) && !empty($rate['category']);
+            })->toArray();
+
+            if (!empty($validRates)) {
+                $award->rates()->createMany($validRates);
+            }
         });
 
         return redirect()->route('awards.index')
             ->with('success', 'Award updated successfully.');
     }
-
     /**
      * Remove the specified resource from storage.
      */
