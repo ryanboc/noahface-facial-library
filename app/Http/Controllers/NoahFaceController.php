@@ -31,8 +31,7 @@ class NoahFaceController extends Controller
 
     public function receiveEvent(Request $request)
     {
-        // 1. Log IMMEDIATELY to confirm iPad reached server
-        // This helps you see if the request arrived, even if password fails later
+        
         Log::info('NoahFace Hit Received. User: ' . $request->getUser());
 
         // 2. Authentication (Using CONFIG, not ENV)
@@ -50,7 +49,7 @@ class NoahFaceController extends Controller
         $eventData = $request->all();
         Log::info('NoahFace Payload:', $eventData);
 
-        // 3. Save RAW Event (Audit Trail)
+        
         NoahFaceEvent::create([
             'eventid' => $eventData['eventid'] ?? null,
             'utc' => $eventData['utc'] ?? null,
@@ -78,12 +77,11 @@ class NoahFaceController extends Controller
             'usertype' => $eventData['usertype'] ?? null,
         ]);
 
-        // 4. SYNC TO PAYROLL SYSTEM (The Missing Piece)
-        // This puts the data into the 'attendance_logs' table for your Dashboard
-        $incomingId = $eventData['userid'] ?? null;
+       
+        $incomingId = $eventData['userid'] ?? $eventData['number'] ?? null;
 
         if ($incomingId) {
-            // Find the Employee linked to this NoahFace ID
+            
             $employee = Employee::where('noahface_id', $incomingId)->first();
 
             if ($employee) {

@@ -20,8 +20,7 @@ class StoreEmployeeRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('employees')->ignore($employeeId)],
-            
-            // Critical: This ID must be unique to map correctly to NoahFace events
+            'base_rate' => 'required|numeric|min:0',
             'noahface_id' => ['required', 'string', Rule::unique('employees')->ignore($employeeId)],
             
             'award_id' => 'required|exists:awards,id',
