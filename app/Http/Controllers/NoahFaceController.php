@@ -39,12 +39,18 @@ class NoahFaceController extends Controller
         $password = $request->getPassword();
 
         // FIX: Use config() helper to read from services.php
-        if ($username !== config('services.noahface.username') || 
-            $password !== config('services.noahface.password')) {
+        // if ($username !== config('services.noahface.username') || 
+        //     $password !== config('services.noahface.password')) {
             
-            Log::warning("NoahFace Auth Failed. Provided: [$username]");
-            return response()->json(['message' => 'Unauthorized'], 401);
+        //     Log::warning("NoahFace Auth Failed. Provided: [$username]");
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
+
+        if ($user !== env('NOAHFACE_USERNAME') || $password !== env('NOAHFACE_PASSWORD')) {
+            return response()->json(['message' => 'Unauthorized'], 401)
+                         ->header('WWW-Authenticate', 'Basic realm="NoahFace Webhook"');
         }
+
 
         $eventData = $request->all();
         Log::info('NoahFace Payload:', $eventData);
