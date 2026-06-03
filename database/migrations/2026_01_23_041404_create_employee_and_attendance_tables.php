@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('noahface_id')->unique()->index(); 
             
             // Link to the Award System
-            $table->foreignId('award_id')->constrained()->nullOnDelete();
+            $table->foreignId('award_id')->nullable();
             
             // Critical: Matches the 'employment_type' string in your 'award_rates' table
             // e.g., 'Casual' or 'Full Time/Part Time'
