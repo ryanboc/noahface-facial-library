@@ -28,24 +28,24 @@ return new class extends Migration
         });
 
         // 2. Attendance Logs (NoahFace Events)
-        Schema::create('attendance_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+        // Schema::create('attendance_logs', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('employee_id')->constrained()->onDelete('cascade');
             
-            $table->dateTime('clock_time');
-            $table->string('event_type'); // 'clock_in', 'clock_out', 'break_start', etc.
-            $table->string('location')->nullable(); // e.g., 'Warehouse A'
+        //     $table->dateTime('clock_time');
+        //     $table->string('event_type'); // 'clock_in', 'clock_out', 'break_start', etc.
+        //     $table->string('location')->nullable(); // e.g., 'Warehouse A'
             
-            // Optional: Store the raw JSON from NoahFace webhook for debugging
-            $table->json('raw_payload')->nullable(); 
+        //     // Optional: Store the raw JSON from NoahFace webhook for debugging
+        //     $table->json('raw_payload')->nullable(); 
             
-            $table->timestamps();
-        });
+        //     $table->timestamps();
+        // });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('attendance_logs');
+       // Schema::dropIfExists('attendance_logs');
         Schema::dropIfExists('employees');
     }
 };
