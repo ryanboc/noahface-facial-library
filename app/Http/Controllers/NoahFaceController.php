@@ -37,18 +37,12 @@ class NoahFaceController extends Controller
         // 2. Authentication (Using CONFIG, not ENV)
         $username = $request->getUser();
         $password = $request->getPassword();
-
-        // FIX: Use config() helper to read from services.php
-        // if ($username !== config('services.noahface.username') || 
-        //     $password !== config('services.noahface.password')) {
-            
-        //     Log::warning("NoahFace Auth Failed. Provided: [$username]");
-        //     return response()->json(['message' => 'Unauthorized'], 401);
-        // }
-
-        if ($user !== env('NOAHFACE_USERNAME') || $password !== env('NOAHFACE_PASSWORD')) {
+       
+       // Checking authenticaion
+       if ($username !== config('services.noahface.username') || $password !== config('services.noahface.password')) {
+            Log::warning("NoahFace Auth Failed. Provided: [$username]");
             return response()->json(['message' => 'Unauthorized'], 401)
-                         ->header('WWW-Authenticate', 'Basic realm="NoahFace Webhook"');
+                ->header('WWW-Authenticate', 'Basic realm="NoahFace Webhook"');
         }
 
 
