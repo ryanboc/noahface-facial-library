@@ -31,7 +31,7 @@ class AwardController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAwardRequest $request)
     {
         DB::transaction(function () use ($request) {
             
