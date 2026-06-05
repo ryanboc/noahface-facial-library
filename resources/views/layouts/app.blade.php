@@ -15,7 +15,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="{{ url('/') }}" class="text-xl font-bold text-blue-600">
-                        Payroll System
+                        NoahFace Sync
                     </a>
                     <div class="ml-10 space-x-4">
                         <a href="{{ route('awards.index') }}" class="text-gray-600 hover:text-blue-600">Awards</a>
