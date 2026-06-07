@@ -23,6 +23,23 @@
                         <a href="{{ route('attendance.timesheet') }}" class="text-gray-600 hover:text-blue-600">Timesheets</a>
                     </div>
                 </div>
+
+                {{-- Right Side: User Info & Logout --}}
+                <div class="flex items-center">
+                    @auth
+                        <span class="text-sm text-gray-500 mr-4">
+                            Hi, {{ auth()->user()->name }}
+                        </span>
+                        
+                        {{-- Logout must be a POST request for security --}}
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="text-gray-600 hover:text-red-600 font-medium focus:outline-none transition-colors duration-150">
+                                Logout
+                            </button>
+                        </form>
+                    @endauth
+                </div>
             </div>
         </div>
     </nav>
