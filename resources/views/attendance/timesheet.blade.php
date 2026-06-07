@@ -51,42 +51,51 @@
     {{-- TABLE --}}
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="min-w-full leading-normal">
-            <thead>
-                <tr class="bg-gray-800 text-white uppercase text-xs font-semibold">
-                    <th class="py-3 px-5 text-left">Date</th>
-                    <th class="py-3 px-5 text-left">Employee</th>
-                    <th class="py-3 px-5 text-left">Shift Time</th>
-                    <th class="py-3 px-5 text-left">Hours</th>
-                    <th class="py-3 px-5 text-left">Rate</th>
-                    <th class="py-3 px-5 text-left">Total Pay</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700">
-                @forelse($timesheets as $sheet)
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-4 px-5">{{ $sheet['date'] }}</td>
-                        <td class="py-4 px-5 font-bold">{{ $sheet['employee'] }}</td>
-                        <td class="py-4 px-5">
-                            {{ $sheet['start'] }} - {{ $sheet['end'] }}
-                        </td>
-                        <td class="py-4 px-5">{{ $sheet['duration'] }}</td>
-                        <td class="py-4 px-5">
-                            <div class="text-gray-900">{{ $sheet['rate'] }}</div>
-                            <div class="text-xs text-gray-500">{{ $sheet['rate_label'] }}</div>
-                        </td>
-                        <td class="py-4 px-5 font-bold text-green-600 text-lg">
-                            {{ $sheet['total_pay'] }}
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-8 text-gray-500">
-                            No shifts found for this period.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <thead>
+        <tr class="bg-gray-800 text-white uppercase text-xs font-semibold">
+            <th class="py-3 px-5 text-left">Date</th>
+            <th class="py-3 px-5 text-left">Employee</th>
+            <th class="py-3 px-5 text-left">Shift Time</th>
+            <th class="py-3 px-5 text-left">Duration</th>
+            <th class="py-3 px-5 text-left">Details</th> <th class="py-3 px-5 text-left">Rate</th>
+            <th class="py-3 px-5 text-left">Total Pay</th>
+        </tr>
+    </thead>
+    <tbody class="text-gray-700">
+        @forelse($timesheets as $sheet)
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-4 px-5">{{ $sheet['date'] }}</td>
+                <td class="py-4 px-5 font-bold">{{ $sheet['employee'] }}</td>
+                <td class="py-4 px-5">
+                    {{ $sheet['start'] }} - {{ $sheet['end'] }}
+                </td>
+                <td class="py-4 px-5">{{ $sheet['duration'] }}</td>
+                
+                <td class="py-4 px-5">
+                    <div class="text-sm text-gray-900 font-semibold">{{ $sheet['device'] }}</div>
+                    <div class="text-xs text-gray-500">Method: {{ $sheet['method'] }}</div>
+                    @if($sheet['temperature'] !== 'N/A' && $sheet['temperature'] > 0)
+                        <div class="text-xs text-red-500">Temp: {{ $sheet['temperature'] }}°C</div>
+                    @endif
+                </td>
+                
+                <td class="py-4 px-5">
+                    <div class="text-gray-900">{{ $sheet['rate'] }}</div>
+                    <div class="text-xs text-gray-500">{{ $sheet['rate_label'] }}</div>
+                </td>
+                <td class="py-4 px-5 font-bold text-green-600 text-lg">
+                    {{ $sheet['total_pay'] }}
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="7" class="text-center py-8 text-gray-500">
+                    No shifts found for this period.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
     </div>
 </div>
 @endsection

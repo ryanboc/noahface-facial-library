@@ -73,6 +73,10 @@ class AttendanceController extends Controller
                     $rateInfo = $employee->getRateDetails($start); 
                     $totalPay = $duration * $rateInfo['final_rate'];
 
+                    $startPayload = is_array($currentShiftStart->raw_payload) 
+                            ? $currentShiftStart->raw_payload 
+                            : json_decode($currentShiftStart->raw_payload, true);
+
                     $timesheets[] = [
                         'date_raw'  => $start->format('Y-m-d'), // For sorting if needed
                         'date'      => $start->format('D, d M Y'),
@@ -83,7 +87,10 @@ class AttendanceController extends Controller
                         'rate_label'=> $rateInfo['label'], // Added label for CSV context
                         'rate'      => '$' . number_format($rateInfo['final_rate'], 2) . '/hr',
                         'total_pay' => '$' . number_format($totalPay, 2),
-                        'total_pay_raw' => $totalPay // For summing if needed
+                        'total_pay_raw' => $totalPay, // For summing if needed
+                        'device'      => $startPayload['device'] ?? 'Unknown Device',
+                        'temperature' => $startPayload['temperature'] ?? 'N/A',
+                        'method'      => $startPayload['method'] ?? 'N/A',
                     ];
                     
                     $currentShiftStart = null;
