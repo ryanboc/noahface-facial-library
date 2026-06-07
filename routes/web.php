@@ -15,7 +15,7 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/', function () {
-    return view('auth.login');
+    return redirect()->route('attendance.timesheet');
 });
 
 // Protected Routes (Must be logged in to access these)
