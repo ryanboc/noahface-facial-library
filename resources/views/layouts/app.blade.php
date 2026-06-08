@@ -15,7 +15,7 @@
         <div class="flex justify-between items-center h-16">
             
             {{-- Logo --}}
-            <div class="flex-shrink-0 flex items-center">
+            <div class="shrink-0 flex items-center">
                 <a href="{{ url('/') }}" class="text-xl font-bold text-blue-600 whitespace-nowrap">
                     NoahFace Sync
                 </a>
