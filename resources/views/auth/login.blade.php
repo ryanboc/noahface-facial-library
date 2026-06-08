@@ -39,6 +39,10 @@
             <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 Login
             </button>
+            <div class="text-center mt-4">
+                <span class="text-gray-600 text-sm">Don't have an account?</span>
+                <a href="{{ route('register') }}" class="text-sm text-blue-600 hover:text-blue-800 font-semibold ml-1">Register here.</a>
+            </div>
         </form>
     </div>
 
