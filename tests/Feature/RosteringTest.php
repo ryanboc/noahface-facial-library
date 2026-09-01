@@ -41,4 +41,44 @@ class RosteringTest extends TestCase
         RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00', 'role' => 'Supervisor']);
         $this->actingAs($manager)->get(route('roster.print', ['week' => '2026-09-07']))->assertOk()->assertSee('Weekly roster')->assertSee('Alex Smith')->assertSee('Supervisor');
     }
+
+    public function test_employee_cannot_be_rostered_twice_on_the_same_day(): void
+    {
+        $manager = User::factory()->create(); $employee = $this->employee();
+        RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00']);
+
+        $this->actingAs($manager)->from(route('roster.index'))->post(route('roster.store'), [
+            'employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '18:00', 'end_time' => '22:00',
+        ])->assertSessionHasErrors(['employee_id' => 'Alex Smith is already rostered on 08 Sep 2026.']);
+
+        $this->assertDatabaseCount('roster_shifts', 1);
+    }
+
+    public function test_shift_cannot_take_employee_over_forty_hours_for_the_week(): void
+    {
+        $manager = User::factory()->create(); $employee = $this->employee();
+        foreach (range(7, 10) as $day) {
+            RosterShift::create(['employee_id' => $employee->id, 'shift_date' => "2026-09-{$day}", 'start_time' => '09:00', 'end_time' => '19:00']);
+        }
+
+        $this->actingAs($manager)->from(route('roster.index'))->post(route('roster.store'), [
+            'employee_id' => $employee->id, 'shift_date' => '2026-09-11', 'start_time' => '09:00', 'end_time' => '10:00',
+        ])->assertSessionHasErrors('end_time');
+
+        $this->assertDatabaseCount('roster_shifts', 4);
+    }
+
+    public function test_shift_above_thirty_eight_hours_is_added_with_warning(): void
+    {
+        $manager = User::factory()->create(); $employee = $this->employee();
+        foreach (range(7, 10) as $day) {
+            RosterShift::create(['employee_id' => $employee->id, 'shift_date' => "2026-09-{$day}", 'start_time' => '09:00', 'end_time' => '18:30']);
+        }
+
+        $this->actingAs($manager)->post(route('roster.store'), [
+            'employee_id' => $employee->id, 'shift_date' => '2026-09-11', 'start_time' => '09:00', 'end_time' => '10:00',
+        ])->assertSessionHas('success', fn ($message) => str_contains($message, 'above the standard 38 hours'));
+
+        $this->assertDatabaseCount('roster_shifts', 5);
+    }
 }

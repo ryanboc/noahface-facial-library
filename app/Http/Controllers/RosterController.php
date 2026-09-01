@@ -19,8 +19,11 @@ class RosterController extends Controller
         $leave = LeaveRequest::with('employee')->where('status', 'approved')->whereDate('start_date', '<=', $weekEnd)->whereDate('end_date', '>=', $weekStart)->get();
         $days = collect(range(0, 6))->map(fn ($day) => $weekStart->copy()->addDays($day));
         $totalHours = $shifts->sum(fn ($shift) => $this->duration($shift->start_time, $shift->end_time));
+        $employeeHours = $shifts->groupBy('employee_id')->map(fn ($employeeShifts) =>
+            $employeeShifts->sum(fn ($shift) => $this->duration($shift->start_time, $shift->end_time))
+        );
 
-        return view('roster.index', compact('weekStart', 'weekEnd', 'employees', 'shifts', 'leave', 'days', 'totalHours'));
+        return view('roster.index', compact('weekStart', 'weekEnd', 'employees', 'shifts', 'leave', 'days', 'totalHours', 'employeeHours'));
     }
 
     public function store(Request $request)
@@ -34,8 +37,36 @@ class RosterController extends Controller
             ->whereDate('start_date', '<=', $data['shift_date'])->whereDate('end_date', '>=', $data['shift_date'])->exists();
         if ($onLeave) throw ValidationException::withMessages(['employee_id' => 'This employee has approved leave on the selected date.']);
 
+        $employee = Employee::findOrFail($data['employee_id']);
+        $alreadyRostered = RosterShift::where('employee_id', $data['employee_id'])
+            ->whereDate('shift_date', $data['shift_date'])->exists();
+        if ($alreadyRostered) {
+            throw ValidationException::withMessages([
+                'employee_id' => "{$employee->name} is already rostered on ".Carbon::parse($data['shift_date'])->format('d M Y').'.',
+            ]);
+        }
+
+        $weekStart = Carbon::parse($data['shift_date'])->startOfWeek();
+        $weekEnd = $weekStart->copy()->endOfWeek();
+        $existingHours = RosterShift::where('employee_id', $data['employee_id'])
+            ->whereBetween('shift_date', [$weekStart, $weekEnd])
+            ->get(['start_time', 'end_time'])
+            ->sum(fn ($shift) => $this->duration($shift->start_time, $shift->end_time));
+        $weeklyHours = $existingHours + $this->duration($data['start_time'], $data['end_time']);
+
+        if ($weeklyHours > 40) {
+            throw ValidationException::withMessages([
+                'end_time' => "This shift would roster {$employee->name} for ".number_format($weeklyHours, 1).' hours this week, exceeding the 40-hour limit.',
+            ]);
+        }
+
         RosterShift::create($data);
-        return redirect()->route('roster.index', ['week' => Carbon::parse($data['shift_date'])->startOfWeek()->toDateString()])->with('success', 'Shift added to the roster.');
+        $message = 'Shift added to the roster.';
+        if ($weeklyHours > 38) {
+            $message .= " Warning: {$employee->name} is rostered for ".number_format($weeklyHours, 1).' hours this week, above the standard 38 hours.';
+        }
+
+        return redirect()->route('roster.index', ['week' => $weekStart->toDateString()])->with('success', $message);
     }
 
     public function destroy(RosterShift $rosterShift)
