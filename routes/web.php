@@ -6,6 +6,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController; 
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\RosterController;
 
 // Public Routes (Anyone can see these)
 Route::middleware('guest')->group(function () {
@@ -39,4 +41,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('awards', AwardController::class);
     Route::resource('employees', EmployeeController::class);
     Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
+    Route::get('leave', [LeaveRequestController::class, 'index'])->name('leave.index');
+    Route::post('leave', [LeaveRequestController::class, 'store'])->name('leave.store');
+    Route::patch('leave/{leaveRequest}/review', [LeaveRequestController::class, 'review'])->name('leave.review');
+    Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
+    Route::post('roster', [RosterController::class, 'store'])->name('roster.store');
+    Route::delete('roster/{rosterShift}', [RosterController::class, 'destroy'])->name('roster.destroy');
+    Route::get('roster/print', [RosterController::class, 'print'])->name('roster.print');
 });

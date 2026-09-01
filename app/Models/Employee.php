@@ -22,6 +22,16 @@ class Employee extends Model
         return $this->hasMany(AttendanceLog::class);
     }
 
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function rosterShifts(): HasMany
+    {
+        return $this->hasMany(RosterShift::class);
+    }
+
     /**
      * Helper to get the specific rate for this employee for a specific scenario.
      * Usage: $employee->getRate('Public Holiday'); // Returns '250%'

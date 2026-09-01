@@ -26,6 +26,8 @@
                 <a href="{{ route('awards.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Awards</a>
                 <a href="{{ route('employees.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Employees</a>
                 <a href="{{ route('attendance.timesheet') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Timesheets</a>
+                <a href="{{ route('roster.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Roster</a>
+                <a href="{{ route('leave.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Leave</a>
             </div>
 
             {{-- Desktop Right Side: User Dropdown --}}
@@ -77,6 +79,8 @@
             <a href="{{ route('awards.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Awards</a>
             <a href="{{ route('employees.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Employees</a>
             <a href="{{ route('attendance.timesheet') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Timesheets</a>
+            <a href="{{ route('roster.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Roster</a>
+            <a href="{{ route('leave.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Leave approvals</a>
         </div>
         
         @auth
@@ -110,6 +114,14 @@
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                     <strong class="font-bold">Success!</strong>
                     <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="container mx-auto mt-6 px-4">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg" role="alert">
+                    <strong class="font-semibold">Please check the details:</strong>
+                    <ul class="mt-1 list-disc list-inside text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                 </div>
             </div>
         @endif
