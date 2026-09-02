@@ -43,16 +43,28 @@ class RosteringTest extends TestCase
         $this->actingAs($manager)->get(route('roster.print', ['week' => '2026-09-07']))->assertOk()->assertSee('Rosters for week commencing')->assertSee('Alex Smith')->assertSee('Supervisor')->assertSee('Annual leave');
     }
 
-    public function test_employee_cannot_be_rostered_twice_on_the_same_day(): void
+    public function test_employee_cannot_be_rostered_for_overlapping_shifts(): void
     {
         $manager = User::factory()->create(); $employee = $this->employee();
         RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00']);
 
         $this->actingAs($manager)->from(route('roster.index'))->post(route('roster.store'), [
-            'employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '18:00', 'end_time' => '22:00',
-        ])->assertSessionHasErrors(['employee_id' => 'Alex Smith is already rostered on 08 Sep 2026.']);
+            'employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '16:00', 'end_time' => '22:00',
+        ])->assertSessionHasErrors('start_time');
 
         $this->assertDatabaseCount('roster_shifts', 1);
+    }
+
+    public function test_employee_can_work_separate_shifts_on_the_same_day(): void
+    {
+        $manager = User::factory()->create(); $employee = $this->employee();
+        RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '05:00', 'end_time' => '12:00']);
+
+        $this->actingAs($manager)->post(route('roster.store'), [
+            'employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '17:00', 'end_time' => '21:00',
+        ])->assertRedirect();
+
+        $this->assertDatabaseCount('roster_shifts', 2);
     }
 
     public function test_shift_cannot_take_employee_over_forty_hours_for_the_week(): void

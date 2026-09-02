@@ -38,11 +38,18 @@ class RosterController extends Controller
         if ($onLeave) throw ValidationException::withMessages(['employee_id' => 'This employee has approved leave on the selected date.']);
 
         $employee = Employee::findOrFail($data['employee_id']);
-        $alreadyRostered = RosterShift::where('employee_id', $data['employee_id'])
-            ->whereDate('shift_date', $data['shift_date'])->exists();
-        if ($alreadyRostered) {
+        $proposedDate = Carbon::parse($data['shift_date']);
+        [$proposedStart, $proposedEnd] = $this->shiftInterval($proposedDate, $data['start_time'], $data['end_time']);
+        $overlappingShift = RosterShift::where('employee_id', $data['employee_id'])
+            ->whereBetween('shift_date', [$proposedDate->copy()->subDay(), $proposedDate->copy()->addDay()])
+            ->get()
+            ->first(function ($shift) use ($proposedStart, $proposedEnd) {
+                [$existingStart, $existingEnd] = $this->shiftInterval($shift->shift_date, $shift->start_time, $shift->end_time);
+                return $proposedStart->lt($existingEnd) && $proposedEnd->gt($existingStart);
+            });
+        if ($overlappingShift) {
             throw ValidationException::withMessages([
-                'employee_id' => "{$employee->name} is already rostered on ".Carbon::parse($data['shift_date'])->format('d M Y').'.',
+                'start_time' => "{$employee->name} already has an overlapping shift from ".Carbon::parse($overlappingShift->start_time)->format('g:i A').' to '.Carbon::parse($overlappingShift->end_time)->format('g:i A').' on '.$overlappingShift->shift_date->format('d M Y').'.',
             ]);
         }
 
@@ -97,5 +104,13 @@ class RosterController extends Controller
     {
         $from = Carbon::parse($start); $to = Carbon::parse($end); if ($to->lte($from)) $to->addDay();
         return $from->diffInMinutes($to) / 60;
+    }
+
+    private function shiftInterval(Carbon $date, string $start, string $end): array
+    {
+        $from = $date->copy()->setTimeFromTimeString($start);
+        $to = $date->copy()->setTimeFromTimeString($end);
+        if ($to->lte($from)) $to->addDay();
+        return [$from, $to];
     }
 }
