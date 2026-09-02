@@ -31,6 +31,8 @@ class RosteringTest extends TestCase
     {
         $manager = User::factory()->create(); $employee = $this->employee();
         LeaveRequest::create(['employee_id' => $employee->id, 'leave_type' => 'Annual leave', 'start_date' => '2026-09-07', 'end_date' => '2026-09-09', 'status' => 'approved']);
+        $this->actingAs($manager)->get(route('roster.index', ['week' => '2026-09-07']))
+            ->assertOk()->assertSee('Alex Smith — On approved leave');
         $this->actingAs($manager)->from(route('roster.index'))->post(route('roster.store'), ['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00'])->assertSessionHasErrors('employee_id');
         $this->assertDatabaseCount('roster_shifts', 0);
     }

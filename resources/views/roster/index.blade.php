@@ -20,12 +20,38 @@
             </div>
         </div>
         <aside class="bg-white border rounded-xl shadow-sm p-5 h-fit"><h2 class="font-bold text-lg">Add a shift</h2><p class="text-sm text-gray-500 mb-5">Leave, overlapping shifts and weekly hours are checked automatically.</p><form method="POST" action="{{ route('roster.store') }}" class="space-y-4">@csrf
-            <div><label class="text-sm font-medium">Employee</label><select name="employee_id" required class="mt-1 w-full border rounded-lg px-3 py-2.5"><option value="">Select employee</option>@foreach($employees as $employee)<option value="{{ $employee->id }}" @selected(old('employee_id') == $employee->id)>{{ $employee->name }}{{ $employeeHours->has($employee->id) ? ' — '.number_format($employeeHours[$employee->id], 1).' hrs' : '' }}</option>@endforeach</select>@error('employee_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
-            <div><label class="text-sm font-medium">Date</label><input type="date" name="shift_date" value="{{ old('shift_date', $weekStart->toDateString()) }}" required class="mt-1 w-full border rounded-lg px-3 py-2.5"></div>
+            @php $selectedRosterDate = old('shift_date', $weekStart->toDateString()); @endphp
+            <div><label class="text-sm font-medium">Employee</label><select id="roster-employee" name="employee_id" required class="mt-1 w-full border rounded-lg px-3 py-2.5"><option value="">Select employee</option>@foreach($employees as $employee)@php $optionLabel = $employee->name.($employeeHours->has($employee->id) ? ' — '.number_format($employeeHours[$employee->id], 1).' hrs' : ''); $isOnLeave = $leave->where('employee_id', $employee->id)->contains(fn($item) => \Carbon\Carbon::parse($selectedRosterDate)->between($item->start_date, $item->end_date)); @endphp<option value="{{ $employee->id }}" data-label="{{ $optionLabel }}" @selected(old('employee_id') == $employee->id) @disabled($isOnLeave)>{{ $optionLabel }}{{ $isOnLeave ? ' — On approved leave' : '' }}</option>@endforeach</select><p id="leave-selection-help" class="mt-1 text-xs text-amber-700 hidden">Employees on approved leave cannot be selected for this date.</p>@error('employee_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div>
+            <div><label class="text-sm font-medium">Date</label><input id="roster-date" type="date" name="shift_date" value="{{ $selectedRosterDate }}" required class="mt-1 w-full border rounded-lg px-3 py-2.5"></div>
             <div class="grid grid-cols-2 gap-3"><div><label class="text-sm font-medium">Start</label><input type="time" name="start_time" value="{{ old('start_time', '09:00') }}" required class="mt-1 w-full border rounded-lg px-3 py-2.5">@error('start_time')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div><div><label class="text-sm font-medium">End</label><input type="time" name="end_time" value="{{ old('end_time', '17:00') }}" required class="mt-1 w-full border rounded-lg px-3 py-2.5">@error('end_time')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror</div></div>
             <div class="grid grid-cols-2 gap-3"><div><label class="text-sm font-medium">Role</label><input name="role" value="{{ old('role') }}" class="mt-1 w-full border rounded-lg px-3 py-2.5" placeholder="Supervisor"></div><div><label class="text-sm font-medium">Location</label><input name="location" value="{{ old('location') }}" class="mt-1 w-full border rounded-lg px-3 py-2.5" placeholder="Main site"></div></div>
             <div><label class="text-sm font-medium">Notes</label><textarea name="notes" rows="2" class="mt-1 w-full border rounded-lg px-3 py-2.5">{{ old('notes') }}</textarea></div><p class="text-xs text-gray-500">A warning is shown above 38 weekly hours. Shifts exceeding 40 hours cannot be added.</p><button class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 font-semibold">Add shift</button>
         </form></aside>
     </div>
 </div>
+<script>
+    const approvedLeave = @json($leave->map(fn($item) => ['employee_id' => (string) $item->employee_id, 'start' => $item->start_date->toDateString(), 'end' => $item->end_date->toDateString()])->values());
+    const rosterDate = document.getElementById('roster-date');
+    const rosterEmployee = document.getElementById('roster-employee');
+    const leaveSelectionHelp = document.getElementById('leave-selection-help');
+
+    function updateEmployeeAvailability() {
+        const selectedDate = rosterDate.value;
+        let unavailableCount = 0;
+
+        Array.from(rosterEmployee.options).forEach(option => {
+            if (!option.value) return;
+            const isOnLeave = approvedLeave.some(leave => leave.employee_id === option.value && selectedDate >= leave.start && selectedDate <= leave.end);
+            option.disabled = isOnLeave;
+            option.textContent = option.dataset.label + (isOnLeave ? ' — On approved leave' : '');
+            if (isOnLeave) unavailableCount++;
+        });
+
+        if (rosterEmployee.selectedOptions[0]?.disabled) rosterEmployee.value = '';
+        leaveSelectionHelp.classList.toggle('hidden', unavailableCount === 0);
+    }
+
+    rosterDate.addEventListener('change', updateEmployeeAvailability);
+    updateEmployeeAvailability();
+</script>
 @endsection
