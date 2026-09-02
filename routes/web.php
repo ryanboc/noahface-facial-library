@@ -48,4 +48,5 @@ Route::middleware('auth')->group(function () {
     Route::post('roster', [RosterController::class, 'store'])->name('roster.store');
     Route::delete('roster/{rosterShift}', [RosterController::class, 'destroy'])->name('roster.destroy');
     Route::get('roster/print', [RosterController::class, 'print'])->name('roster.print');
+    Route::get('roster/pdf', [RosterController::class, 'downloadPdf'])->name('roster.pdf');
 });

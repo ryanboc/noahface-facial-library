@@ -45,6 +45,17 @@ class RosteringTest extends TestCase
         $this->actingAs($manager)->get(route('roster.print', ['week' => '2026-09-07']))->assertOk()->assertSee('Rosters for week commencing')->assertSee('Alex Smith')->assertSee('Supervisor')->assertSee('Annual leave');
     }
 
+    public function test_roster_can_be_downloaded_as_a_pdf(): void
+    {
+        $manager = User::factory()->create(); $employee = $this->employee();
+        RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00', 'role' => 'Supervisor']);
+
+        $this->actingAs($manager)->get(route('roster.pdf', ['week' => '2026-09-07']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertDownload('roster-week-2026-09-07.pdf');
+    }
+
     public function test_employee_cannot_be_rostered_for_overlapping_shifts(): void
     {
         $manager = User::factory()->create(); $employee = $this->employee();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\RosterShift;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -85,12 +86,28 @@ class RosterController extends Controller
 
     public function print(Request $request)
     {
+        return view('roster.print', $this->printData($request));
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        $data = $this->printData($request);
+        $data['isPdf'] = true;
+        $filename = 'roster-week-'.$data['weekStart']->format('Y-m-d').'.pdf';
+
+        return Pdf::loadView('roster.print', $data)
+            ->setPaper('a4', 'landscape')
+            ->download($filename);
+    }
+
+    private function printData(Request $request): array
+    {
         [$weekStart, $weekEnd] = $this->week($request);
         $shifts = RosterShift::with('employee')->whereBetween('shift_date', [$weekStart, $weekEnd])->orderBy('shift_date')->orderBy('start_time')->get();
         $leave = LeaveRequest::with('employee')->where('status', 'approved')
             ->whereDate('start_date', '<=', $weekEnd)->whereDate('end_date', '>=', $weekStart)->get();
         $days = collect(range(0, 6))->map(fn ($day) => $weekStart->copy()->addDays($day));
-        return view('roster.print', compact('weekStart', 'weekEnd', 'shifts', 'leave', 'days'));
+        return compact('weekStart', 'weekEnd', 'shifts', 'leave', 'days');
     }
 
     private function week(Request $request): array

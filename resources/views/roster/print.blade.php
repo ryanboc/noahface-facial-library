@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <title>Roster {{ $weekStart->format('d M Y') }}</title>
     <style>
-        *{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:14px;background:#fff}.toolbar{display:flex;justify-content:flex-end;margin-bottom:8px}.print-button{border:0;border-radius:5px;background:#111827;color:#fff;padding:8px 18px;font-weight:700;cursor:pointer}.sheet{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.sheet th,.sheet td{border:1px solid #555;text-align:left;vertical-align:top}.title th{text-align:center;background:#fff;font-size:14px;font-weight:500;padding:3px;text-transform:uppercase}.days th{background:#e7c6e7!important;text-align:center;font-size:10px;padding:4px 2px}.day-cell{padding:0;background:#d9d9d9!important;height:440px}.day-content{min-height:440px;background:#d9d9d9!important}.group{break-inside:avoid}.group-title{background:#8fd14f!important;border-bottom:1px solid #555;padding:3px;font-weight:700;line-height:1.15}.weekend .group-title{background:#40cf66!important}.person{background:#fff!important;border-bottom:1px solid #aaa;min-height:18px;padding:3px}.person-note{font-weight:400;color:#333}.empty{padding:5px;color:#666;font-style:italic}.leave{margin-top:8px;break-inside:avoid}.leave-title{background:#78c4e1!important;border-top:1px solid #555;border-bottom:1px solid #555;padding:3px}.leave-person{background:#fff!important;border-bottom:1px solid #aaa;min-height:18px;padding:3px}.summary{display:flex;justify-content:space-between;gap:20px;margin-top:6px;font-size:9px;color:#555}@page{size:A4 landscape;margin:7mm}@media print{body{margin:0}.no-print{display:none}.sheet{font-size:9px}.day-cell,.day-content{height:178mm;min-height:178mm}}
+        *{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:14px;background:#fff}.toolbar{display:flex;justify-content:flex-end;margin-bottom:8px}.print-button{border:0;border-radius:5px;background:#111827;color:#fff;padding:8px 18px;font-weight:700;cursor:pointer}.sheet{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.sheet th,.sheet td{border:1px solid #555;text-align:left;vertical-align:top}.title th{text-align:center;background:#fff;font-size:14px;font-weight:500;padding:3px;text-transform:uppercase}.days th{background:#e7c6e7!important;text-align:center;font-size:10px;padding:4px 2px}.day-cell{padding:0;background:#d9d9d9!important;height:440px}.day-content{min-height:440px;background:#d9d9d9!important}.pdf .day-cell,.pdf .day-content{height:160mm;min-height:160mm}.group{break-inside:avoid}.group-title{background:#8fd14f!important;border-bottom:1px solid #555;padding:3px;font-weight:700;line-height:1.15}.weekend .group-title{background:#40cf66!important}.person{background:#fff!important;border-bottom:1px solid #aaa;min-height:18px;padding:3px}.person-note{font-weight:400;color:#333}.empty{padding:5px;color:#666;font-style:italic}.leave{margin-top:8px;break-inside:avoid}.leave-title{background:#78c4e1!important;border-top:1px solid #555;border-bottom:1px solid #555;padding:3px}.leave-person{background:#fff!important;border-bottom:1px solid #aaa;min-height:18px;padding:3px}.summary{width:100%;border-collapse:collapse;margin-top:6px;font-size:9px;color:#555}.summary td:last-child{text-align:right}@page{size:A4 landscape;margin:7mm}@media print{body{margin:0}.no-print{display:none}.sheet{font-size:9px}.day-cell,.day-content{height:178mm;min-height:178mm}}
     </style>
 </head>
-<body>
-    <div class="toolbar no-print"><button class="print-button" onclick="window.print()">Print roster</button></div>
+<body class="{{ ($isPdf ?? false) ? 'pdf' : '' }}">
+    @unless($isPdf ?? false)<div class="toolbar no-print"><a class="print-button" style="text-decoration:none;margin-right:6px;background:#2563eb" href="{{ route('roster.pdf', ['week' => $weekStart->toDateString()]) }}">Download PDF</a><button class="print-button" onclick="window.print()">Print roster</button></div>@endunless
     <table class="sheet">
         <thead>
             <tr class="title"><th colspan="7">Rosters for week commencing {{ $weekStart->format('jS F Y') }}</th></tr>
@@ -61,7 +61,7 @@
             </tr>
         </tbody>
     </table>
-    <div class="summary"><span>NOAHFACE SYNC · MANAGER ROSTER</span><span>Printed {{ now()->format('d M Y, g:i A') }}</span></div>
-    <script>if(new URLSearchParams(location.search).has('autoprint'))window.print()</script>
+    <table class="summary"><tr><td>NOAHFACE SYNC · MANAGER ROSTER</td><td>Printed {{ now()->format('d M Y, g:i A') }}</td></tr></table>
+    @unless($isPdf ?? false)<script>if(new URLSearchParams(location.search).has('autoprint'))window.print()</script>@endunless
 </body>
 </html>
