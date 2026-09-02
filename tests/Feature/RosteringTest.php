@@ -56,6 +56,32 @@ class RosteringTest extends TestCase
             ->assertDownload('roster-week-2026-09-07.pdf');
     }
 
+    public function test_populated_roster_pdf_keeps_the_roster_on_one_page(): void
+    {
+        $manager = User::factory()->create();
+        $employees = collect(range(1, 28))->map(fn ($number) => Employee::create([
+            'name' => "Employee {$number}", 'email' => "employee{$number}@example.com", 'noahface_id' => "NF-{$number}",
+            'employment_type' => 'Casual', 'base_rate' => 30,
+        ]));
+
+        foreach (range(7, 13) as $day) {
+            foreach ($employees as $index => $employee) {
+                $group = $index % 4;
+                RosterShift::create([
+                    'employee_id' => $employee->id,
+                    'shift_date' => "2026-09-{$day}",
+                    'start_time' => ['05:00', '07:00', '15:00', '17:00'][$group],
+                    'end_time' => ['11:00', '15:00', '17:00', '23:00'][$group],
+                    'role' => ['Kill Floor', 'Farm', 'Catch', 'Brood Move'][$group],
+                ]);
+            }
+        }
+
+        $response = $this->actingAs($manager)->get(route('roster.pdf', ['week' => '2026-09-07']))->assertOk();
+        preg_match_all('/\/Type\s*\/Page\b/', $response->getContent(), $pages);
+        $this->assertCount(1, $pages[0]);
+    }
+
     public function test_employee_cannot_be_rostered_for_overlapping_shifts(): void
     {
         $manager = User::factory()->create(); $employee = $this->employee();
