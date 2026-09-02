@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Models\Award;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -45,7 +46,7 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request)
     {
-        Employee::create($request->validated());
+        Employee::create($request->safe()->except('account_role'));
 
         return redirect()->route('employees.index')
             ->with('success', 'Employee linked successfully.');
@@ -54,13 +55,18 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $awards = Award::orderBy('name')->get();
+        $linkedAccount = User::where('email', $employee->email)->first();
 
-        return view('employees.edit', compact('employee', 'awards'));
+        return view('employees.edit', compact('employee', 'awards', 'linkedAccount'));
     }
 
     public function update(StoreEmployeeRequest $request, Employee $employee)
     {
-        $employee->update($request->validated());
+        $employee->update($request->safe()->except('account_role'));
+
+        if ($request->filled('account_role')) {
+            User::where('email', $employee->email)->update(['role' => $request->string('account_role')->toString()]);
+        }
 
         return redirect()->route('employees.index')
             ->with('success', 'Employee details updated.');

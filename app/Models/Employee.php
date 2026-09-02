@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
-    protected $fillable = ['name', 'email', 'base_rate','noahface_id', 'award_id', 'employment_type'];
+    protected $fillable = ['name', 'email', 'base_rate', 'noahface_id', 'award_id', 'employment_type', 'annual_leave_allowance'];
 
     // Link to the Award (Rules)
     public function award(): BelongsTo
@@ -51,7 +51,7 @@ class Employee extends Model
     public function getRateForDate($date)
     {
         $carbonDate = \Carbon\Carbon::parse($date);
-        
+
         // 1. Default to the day of the week (e.g., "Monday", "Sunday")
         $category = $carbonDate->format('l');
 
@@ -79,19 +79,19 @@ class Employee extends Model
             ->where('category', $dayName)
             ->first();
 
-        // 2. If no specific day rule is found (e.g., it's a Monday-Friday), 
+        // 2. If no specific day rule is found (e.g., it's a Monday-Friday),
         // we need to decide on a default.
         // Since your seeder doesn't have "Ordinary" rows yet, we will fallback to a default.
-        if (!$rule) {
+        if (! $rule) {
             // Default Logic:
             // If they are Casual, they usually get 25% loading on base (125%).
             // If Full Time, they get base (100%).
             $isCasual = str_contains($this->employment_type, 'Casual');
-            
+
             return [
                 'label' => $isCasual ? 'Ordinary (Casual 25%)' : 'Ordinary (Base)',
-                'multiplier' => $isCasual ? 1.25 : 1.0, 
-                'final_rate' => ($this->base_rate ?? 25.00) * ($isCasual ? 1.25 : 1.0)
+                'multiplier' => $isCasual ? 1.25 : 1.0,
+                'final_rate' => ($this->base_rate ?? 25.00) * ($isCasual ? 1.25 : 1.0),
             ];
         }
 
@@ -108,7 +108,7 @@ class Employee extends Model
         return [
             'label' => "{$rule->category} ({$rawString})", // e.g., "Saturday (120%)"
             'multiplier' => $multiplier,
-            'final_rate' => $baseRate * $multiplier
+            'final_rate' => $baseRate * $multiplier,
         ];
     }
 }

@@ -1,4 +1,4 @@
-@props(['employee' => null, 'awards'])
+@props(['employee' => null, 'awards', 'linkedAccount' => null])
 
 @php
     $isEdit = !is_null($employee);
@@ -81,6 +81,31 @@
             </select>
             @error('employment_type') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
         </div>
+
+        <div>
+            <label class="block text-gray-700 font-bold mb-2">Annual Leave Allowance (days)</label>
+            <input type="number" name="annual_leave_allowance" min="0" max="365"
+                value="{{ old('annual_leave_allowance', $employee->annual_leave_allowance ?? 20) }}"
+                class="w-full border p-2 rounded" required>
+            <p class="text-xs text-gray-500 mt-1">Approved annual leave is deducted from this yearly allowance.</p>
+            @error('annual_leave_allowance') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+        </div>
+
+        @if($isEdit)
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">Account Access</label>
+                @if($linkedAccount)
+                    <select name="account_role" class="w-full border p-2 rounded">
+                        @foreach(['employee' => 'Employee', 'manager' => 'Manager', 'executive' => 'Executive'] as $value => $label)
+                            <option value="{{ $value }}" @selected(old('account_role', $linkedAccount->role) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Managers and executives can review leave requests.</p>
+                @else
+                    <p class="rounded border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800">No login account matches this employee's email yet.</p>
+                @endif
+            </div>
+        @endif
     </div>
 
     <div class="mt-6 flex justify-end">

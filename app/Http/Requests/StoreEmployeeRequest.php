@@ -22,10 +22,12 @@ class StoreEmployeeRequest extends FormRequest
             'email' => ['required', 'email', Rule::unique('employees')->ignore($employeeId)],
             'base_rate' => 'required|numeric|min:0',
             'noahface_id' => ['required', 'string', Rule::unique('employees')->ignore($employeeId)],
-            
+
             'award_id' => 'required|exists:awards,id',
-            
-            'employment_type' => 'required|string|in:Casual,Full Time/Part Time', 
+
+            'employment_type' => 'required|string|in:Casual,Full Time/Part Time',
+            'annual_leave_allowance' => 'required|integer|min:0|max:365',
+            'account_role' => ['nullable', Rule::in(['employee', 'manager', 'executive'])],
         ];
     }
 }

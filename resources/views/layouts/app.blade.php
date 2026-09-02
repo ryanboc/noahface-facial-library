@@ -23,11 +23,12 @@
 
             {{-- Desktop Navigation --}}
             <div class="hidden md:flex md:items-center md:space-x-6 lg:space-x-8">
+                <a href="{{ route('profile.show') }}" class="text-gray-600 hover:text-blue-600 transition-colors">My dashboard</a>
                 <a href="{{ route('awards.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Awards</a>
                 <a href="{{ route('employees.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Employees</a>
                 <a href="{{ route('attendance.timesheet') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Timesheets</a>
                 <a href="{{ route('roster.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Roster</a>
-                <a href="{{ route('leave.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Leave</a>
+                @if(auth()->user()->canApproveLeave())<a href="{{ route('leave.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Leave approvals</a>@endif
             </div>
 
             {{-- Desktop Right Side: User Dropdown --}}
@@ -41,6 +42,7 @@
                     <div id="user-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200">
                         
                         {{-- SMART 2FA CHECK --}}
+                        <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">My profile</a>
                         @if(auth()->user()->google2fa_secret)
                             <div class="block px-4 py-2 text-sm text-green-600 font-semibold border-b border-gray-100 bg-green-50">
                                 ✓ 2FA Enabled
@@ -76,11 +78,12 @@
     {{-- Mobile Dropdown Menu --}}
     <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
         <div class="px-4 pt-2 pb-3 space-y-1">
+            <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">My dashboard</a>
             <a href="{{ route('awards.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Awards</a>
             <a href="{{ route('employees.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Employees</a>
             <a href="{{ route('attendance.timesheet') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Timesheets</a>
             <a href="{{ route('roster.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Roster</a>
-            <a href="{{ route('leave.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Leave approvals</a>
+            @if(auth()->user()->canApproveLeave())<a href="{{ route('leave.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Leave approvals</a>@endif
         </div>
         
         @auth

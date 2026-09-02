@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\RosterController;
+use App\Http\Controllers\ProfileController;
 
 // Public Routes (Anyone can see these)
 Route::middleware('guest')->group(function () {
@@ -32,6 +33,9 @@ Route::get('/', function () {
 
 // Protected Routes (Must be logged in to access these)
 Route::middleware('auth')->group(function () {
+
+    Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('profile/leave', [ProfileController::class, 'requestLeave'])->name('profile.leave.store');
 
     // 2FA Setup Routes
     Route::get('2fa/setup', [TwoFactorController::class, 'showSetup'])->name('2fa.setup');

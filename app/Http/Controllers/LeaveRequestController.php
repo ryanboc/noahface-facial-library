@@ -11,6 +11,7 @@ class LeaveRequestController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless($request->user()->canApproveLeave(), 403);
         $status = $request->string('status')->toString();
         $requests = LeaveRequest::with(['employee', 'reviewer'])
             ->when(in_array($status, ['pending', 'approved', 'declined']), fn ($query) => $query->where('status', $status))
@@ -22,6 +23,7 @@ class LeaveRequestController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->canApproveLeave(), 403);
         $data = $request->validate([
             'employee_id' => ['required', 'exists:employees,id'],
             'leave_type' => ['required', Rule::in(['Annual leave', 'Personal leave', 'Unpaid leave', 'Other'])],
@@ -30,16 +32,19 @@ class LeaveRequestController extends Controller
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
         LeaveRequest::create($data);
+
         return back()->with('success', 'Leave request submitted for approval.');
     }
 
     public function review(Request $request, LeaveRequest $leaveRequest)
     {
+        abort_unless($request->user()->canApproveLeave(), 403);
         $data = $request->validate([
             'status' => ['required', Rule::in(['approved', 'declined'])],
             'manager_note' => ['nullable', 'string', 'max:1000'],
         ]);
         $leaveRequest->update($data + ['reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
+
         return back()->with('success', "Leave request {$data['status']}.");
     }
 }
