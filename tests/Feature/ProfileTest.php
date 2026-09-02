@@ -61,6 +61,23 @@ class ProfileTest extends TestCase
         $this->actingAs($user)->get(route('profile.show'))->assertOk()->assertSee('Profile not linked');
     }
 
+    public function test_employee_cannot_access_management_pages_or_see_management_navigation(): void
+    {
+        $user = User::factory()->create(['role' => 'employee']);
+
+        foreach (['awards.index', 'employees.index', 'attendance.timesheet', 'roster.index', 'leave.index'] as $route) {
+            $this->actingAs($user)->get(route($route))->assertForbidden();
+        }
+
+        $this->actingAs($user)->get(route('profile.show'))
+            ->assertOk()
+            ->assertDontSee('>Awards<', false)
+            ->assertDontSee('>Employees<', false)
+            ->assertDontSee('>Timesheets<', false)
+            ->assertDontSee('>Roster<', false)
+            ->assertDontSee('>Leave approvals<', false);
+    }
+
     private function employee(): Employee
     {
         return Employee::create([

@@ -46,7 +46,7 @@ class AuthController extends Controller
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
 
-            return redirect()->intended('/employees');
+            return redirect()->intended(route('profile.show'));
         }
 
         // 6. Password failed

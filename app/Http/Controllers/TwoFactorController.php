@@ -71,7 +71,7 @@ class TwoFactorController extends Controller
             $request->session()->forget('2fa_setup_secret');
 
             // Send them to the dashboard with a success message
-            return redirect('/employees')->with('success', 'Two-Factor Authentication is now enabled!');
+            return redirect()->route('profile.show')->with('success', 'Two-Factor Authentication is now enabled!');
         }
 
         // FAILED. They typed the wrong pin. Send them back to try again.
