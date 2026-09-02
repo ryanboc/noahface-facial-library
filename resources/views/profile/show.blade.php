@@ -18,6 +18,7 @@
             <div class="rounded-xl border bg-white p-5"><p class="text-sm text-gray-500">Annual leave available</p><p class="mt-1 text-3xl font-bold text-green-700">{{ $availableAnnualLeave }} <span class="text-base font-medium">days</span></p></div>
             <div class="rounded-xl border bg-white p-5"><p class="text-sm text-gray-500">Annual leave used in {{ now()->year }}</p><p class="mt-1 text-3xl font-bold">{{ $usedAnnualLeave }} <span class="text-base font-medium">days</span></p></div>
         </div>
+        <div class="mb-7 rounded-xl border bg-white p-5"><p class="text-sm font-medium text-gray-500">My companies / workplaces</p><div class="mt-2 flex flex-wrap gap-2">@forelse($employee->companies as $company)<span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">{{ $company->name }}</span>@empty<span class="text-sm text-gray-500">No workplaces assigned.</span>@endforelse</div></div>
 
         <div class="grid gap-6 lg:grid-cols-[1fr_380px]">
             <div class="space-y-6">

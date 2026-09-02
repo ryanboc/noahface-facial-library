@@ -15,6 +15,8 @@ class ProfileController extends Controller
             return view('profile.show', ['employee' => null]);
         }
 
+        $employee->load('companies');
+
         $today = today();
         $upcomingShifts = $employee->rosterShifts()->whereDate('shift_date', '>=', $today)->orderBy('shift_date')->orderBy('start_time')->limit(10)->get();
         $currentRequests = $employee->leaveRequests()->with('reviewer')->whereDate('end_date', '>=', $today)->latest()->get();

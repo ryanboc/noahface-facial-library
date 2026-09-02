@@ -41,6 +41,7 @@
                     <th class="py-3 px-6 text-left">Name / Email</th>
                     <th class="py-3 px-6 text-left">NoahFace ID</th>
                     <th class="py-3 px-6 text-left">Award</th>
+                    <th class="py-3 px-6 text-left">Companies</th>
                     <th class="py-3 px-6 text-left">Type</th>
                     <th class="py-3 px-6 text-center">Actions</th>
                 </tr>
@@ -48,6 +49,9 @@
             <tbody class="text-gray-600 text-sm font-light">
                 @forelse($employees as $employee)
                     <tr class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex flex-wrap gap-1">@forelse($employee->companies as $company)<span class="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">{{ $company->name }}</span>@empty<span class="text-gray-400">None</span>@endforelse</div>
+                        </td>
                         <td class="py-3 px-6 text-left">
                             <div class="font-medium">{{ $employee->name }}</div>
                             <div class="text-xs text-gray-500">{{ $employee->email }}</div>
@@ -73,7 +77,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4">No employees found.</td>
+                        <td colspan="6" class="text-center py-4">No employees found.</td>
                     </tr>
                 @endforelse
             </tbody>

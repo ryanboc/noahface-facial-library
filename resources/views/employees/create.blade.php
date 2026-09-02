@@ -3,6 +3,6 @@
 @section('content')
 <div class="container mx-auto py-8">
     <h1 class="text-2xl font-bold mb-6">Link New Employee</h1>
-    @include('employees._form', ['awards' => $awards])
+    @include('employees._form', ['awards' => $awards, 'companies' => $companies])
 </div>
 @endsection

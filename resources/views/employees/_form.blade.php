@@ -1,4 +1,4 @@
-@props(['employee' => null, 'awards', 'linkedAccount' => null])
+@props(['employee' => null, 'awards', 'companies', 'linkedAccount' => null])
 
 @php
     $isEdit = !is_null($employee);
@@ -106,6 +106,21 @@
                 @endif
             </div>
         @endif
+
+        <div class="md:col-span-2">
+            <label class="block text-gray-700 font-bold mb-2">Companies / Workplaces</label>
+            @php($selectedCompanies = collect(old('company_ids', $employee?->companies?->pluck('id')->all() ?? []))->map(fn ($id) => (int) $id)->all())
+            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 rounded border p-3">
+                @foreach($companies as $company)
+                    <label class="flex items-center gap-2 rounded p-2 hover:bg-gray-50">
+                        <input type="checkbox" name="company_ids[]" value="{{ $company->id }}" @checked(in_array($company->id, $selectedCompanies, true)) class="rounded border-gray-300 text-blue-600">
+                        <span>{{ $company->name }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Select every workplace this employee can work at.</p>
+            @error('company_ids.*') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+        </div>
     </div>
 
     <div class="mt-6 flex justify-end">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Models\Award;
+use App\Models\Company;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,13 +21,14 @@ class EmployeeController extends Controller
         }
 
         // Eager load the award so we can display "Poultry Award" instead of "ID: 1".
-        $employees = Employee::with('award')
+        $employees = Employee::with(['award', 'companies'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('noahface_id', 'like', "%{$search}%")
                         ->orWhere('employment_type', 'like', "%{$search}%")
+                        ->orWhereHas('companies', fn ($query) => $query->where('name', 'like', "%{$search}%"))
                         ->orWhereHas('award', fn ($query) => $query->where('name', 'like', "%{$search}%"));
                 });
             })
@@ -40,13 +42,15 @@ class EmployeeController extends Controller
     public function create()
     {
         $awards = Award::orderBy('name')->get();
+        $companies = Company::orderBy('name')->get();
 
-        return view('employees.create', compact('awards'));
+        return view('employees.create', compact('awards', 'companies'));
     }
 
     public function store(StoreEmployeeRequest $request)
     {
-        Employee::create($request->safe()->except('account_role'));
+        $employee = Employee::create($request->safe()->except(['account_role', 'company_ids']));
+        $employee->companies()->sync($request->input('company_ids', []));
 
         return redirect()->route('employees.index')
             ->with('success', 'Employee linked successfully.');
@@ -56,13 +60,17 @@ class EmployeeController extends Controller
     {
         $awards = Award::orderBy('name')->get();
         $linkedAccount = User::where('email', $employee->email)->first();
+        $companies = Company::orderBy('name')->get();
 
-        return view('employees.edit', compact('employee', 'awards', 'linkedAccount'));
+        $employee->load('companies');
+
+        return view('employees.edit', compact('employee', 'awards', 'linkedAccount', 'companies'));
     }
 
     public function update(StoreEmployeeRequest $request, Employee $employee)
     {
-        $employee->update($request->safe()->except('account_role'));
+        $employee->update($request->safe()->except(['account_role', 'company_ids']));
+        $employee->companies()->sync($request->input('company_ids', []));
 
         if ($request->filled('account_role')) {
             User::where('email', $employee->email)->update(['role' => $request->string('account_role')->toString()]);

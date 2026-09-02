@@ -9,6 +9,7 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CompanyController;
 
 // Public Routes (Anyone can see these)
 Route::middleware('guest')->group(function () {
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::resource('awards', AwardController::class);
         Route::resource('employees', EmployeeController::class);
+        Route::resource('companies', CompanyController::class)->except('show');
         Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
         Route::get('leave', [LeaveRequestController::class, 'index'])->name('leave.index');
         Route::post('leave', [LeaveRequestController::class, 'store'])->name('leave.store');

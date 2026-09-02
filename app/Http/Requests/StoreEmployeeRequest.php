@@ -28,6 +28,8 @@ class StoreEmployeeRequest extends FormRequest
             'employment_type' => 'required|string|in:Casual,Full Time/Part Time',
             'annual_leave_allowance' => 'required|integer|min:0|max:365',
             'account_role' => ['nullable', Rule::in(['employee', 'manager', 'executive'])],
+            'company_ids' => ['sometimes', 'array'],
+            'company_ids.*' => ['integer', 'distinct', 'exists:companies,id'],
         ];
     }
 }
