@@ -24,8 +24,8 @@ class AttendanceController extends Controller
     {
         // 1. CAPTURE FILTERS
         $search = $request->input('search');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        $startDate = $request->input('start_date', now()->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
         $isExport = $request->has('export');
 
         // 2. QUERY EMPLOYEES (Apply Search Filter)

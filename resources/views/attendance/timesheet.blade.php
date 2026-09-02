@@ -20,13 +20,13 @@
             {{-- Date Range --}}
             <div class="w-full md:w-1/6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" 
+                <input type="date" name="start_date" value="{{ $startDate ?: now()->toDateString() }}"
                        class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
 
             <div class="w-full md:w-1/6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">End Date</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" 
+                <input type="date" name="end_date" value="{{ $endDate ?: now()->toDateString() }}"
                        class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
 
