@@ -39,7 +39,8 @@ class RosteringTest extends TestCase
     {
         $manager = User::factory()->create(); $employee = $this->employee();
         RosterShift::create(['employee_id' => $employee->id, 'shift_date' => '2026-09-08', 'start_time' => '09:00', 'end_time' => '17:00', 'role' => 'Supervisor']);
-        $this->actingAs($manager)->get(route('roster.print', ['week' => '2026-09-07']))->assertOk()->assertSee('Weekly roster')->assertSee('Alex Smith')->assertSee('Supervisor');
+        LeaveRequest::create(['employee_id' => $employee->id, 'leave_type' => 'Annual leave', 'start_date' => '2026-09-09', 'end_date' => '2026-09-09', 'status' => 'approved']);
+        $this->actingAs($manager)->get(route('roster.print', ['week' => '2026-09-07']))->assertOk()->assertSee('Rosters for week commencing')->assertSee('Alex Smith')->assertSee('Supervisor')->assertSee('Annual leave');
     }
 
     public function test_employee_cannot_be_rostered_twice_on_the_same_day(): void

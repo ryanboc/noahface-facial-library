@@ -80,8 +80,10 @@ class RosterController extends Controller
     {
         [$weekStart, $weekEnd] = $this->week($request);
         $shifts = RosterShift::with('employee')->whereBetween('shift_date', [$weekStart, $weekEnd])->orderBy('shift_date')->orderBy('start_time')->get();
+        $leave = LeaveRequest::with('employee')->where('status', 'approved')
+            ->whereDate('start_date', '<=', $weekEnd)->whereDate('end_date', '>=', $weekStart)->get();
         $days = collect(range(0, 6))->map(fn ($day) => $weekStart->copy()->addDays($day));
-        return view('roster.print', compact('weekStart', 'weekEnd', 'shifts', 'days'));
+        return view('roster.print', compact('weekStart', 'weekEnd', 'shifts', 'leave', 'days'));
     }
 
     private function week(Request $request): array
