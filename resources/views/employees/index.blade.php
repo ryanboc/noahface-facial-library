@@ -9,7 +9,32 @@
         </a>
     </div>
 
-    <div class="bg-white shadow-md rounded my-6 overflow-x-auto">
+    <form method="GET" action="{{ route('employees.index') }}" class="bg-white shadow-md rounded-t mt-6 p-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="w-full sm:max-w-md">
+            <label for="employee-search" class="block text-sm font-medium text-gray-700 mb-1">Search employees</label>
+            <div class="flex gap-2">
+                <input id="employee-search" name="search" type="search" value="{{ request('search') }}"
+                    placeholder="Name, email, ID, award or type"
+                    class="w-full rounded border-gray-300 border px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded">Search</button>
+                @if(request()->filled('search'))
+                    <a href="{{ route('employees.index', ['per_page' => $employees->perPage()]) }}" class="flex items-center text-sm text-gray-600 hover:text-gray-900">Clear</a>
+                @endif
+            </div>
+        </div>
+
+        <div>
+            <label for="employee-per-page" class="block text-sm font-medium text-gray-700 mb-1">Records per page</label>
+            <select id="employee-per-page" name="per_page" onchange="this.form.submit()"
+                class="rounded border-gray-300 border px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                @foreach([10, 25, 50, 100] as $size)
+                    <option value="{{ $size }}" @selected($employees->perPage() === $size)>{{ $size }}</option>
+                @endforeach
+            </select>
+        </div>
+    </form>
+
+    <div class="bg-white shadow-md rounded-b overflow-x-auto">
         <table class="min-w-full w-full table-auto">
             <thead>
                 <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -54,6 +79,8 @@
             </tbody>
         </table>
     </div>
-    {{ $employees->links() }}
+    <div class="mt-4">
+        {{ $employees->links() }}
+    </div>
 </div>
 @endsection
