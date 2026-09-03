@@ -1,15 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AwardController;
-use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\AuthController; 
-use App\Http\Controllers\TwoFactorController;
-use App\Http\Controllers\LeaveRequestController;
-use App\Http\Controllers\RosterController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AwardController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\MessageTemplateController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RosterController;
+use App\Http\Controllers\TwoFactorController;
+use Illuminate\Support\Facades\Route;
 
 // Public Routes (Anyone can see these)
 Route::middleware('guest')->group(function () {
@@ -51,6 +52,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('awards', AwardController::class);
         Route::resource('employees', EmployeeController::class);
         Route::resource('companies', CompanyController::class)->except('show');
+        Route::post('messages/{message}/send', [MessageTemplateController::class, 'send'])->name('messages.send');
+        Route::resource('messages', MessageTemplateController::class)->except('show');
         Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
         Route::get('leave/calendar', [LeaveRequestController::class, 'calendar'])->name('leave.calendar');
         Route::get('leave', [LeaveRequestController::class, 'index'])->name('leave.index');
