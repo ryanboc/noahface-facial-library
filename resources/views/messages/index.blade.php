@@ -20,9 +20,9 @@
     <div class="mt-4">{{ $templates->links() }}</div>
 
     <h2 class="mb-3 mt-10 text-xl font-bold">Recent delivery history</h2>
-    <div class="overflow-x-auto rounded-xl border bg-white shadow-sm"><table class="min-w-full"><thead class="bg-gray-100 text-left text-sm uppercase text-gray-600"><tr><th class="px-5 py-3">Recipient</th><th class="px-5 py-3">Template</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">Sent</th></tr></thead><tbody class="divide-y">
-        @forelse($recentMessages as $sent)<tr><td class="px-5 py-4 font-medium">{{ $sent->recipient }}</td><td class="px-5 py-4 text-sm text-gray-600">{{ $sent->template?->name ?? 'Deleted template' }}</td><td class="px-5 py-4"><span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $sent->status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}" title="{{ $sent->error_message }}">{{ ucfirst($sent->status) }}</span></td><td class="px-5 py-4 text-sm text-gray-500">{{ ($sent->sent_at ?? $sent->created_at)->diffForHumans() }}</td></tr>
-        @empty<tr><td colspan="4" class="p-8 text-center text-gray-500">No messages sent yet.</td></tr>@endforelse
+    <div class="overflow-x-auto rounded-xl border bg-white shadow-sm"><table class="min-w-full"><thead class="bg-gray-100 text-left text-sm uppercase text-gray-600"><tr><th class="px-5 py-3">Recipient</th><th class="px-5 py-3">Template</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">Twilio response</th><th class="px-5 py-3">Sent</th></tr></thead><tbody class="divide-y">
+        @forelse($recentMessages as $sent)<tr><td class="px-5 py-4 font-medium">{{ $sent->recipient }}</td><td class="px-5 py-4 text-sm text-gray-600">{{ $sent->template?->name ?? 'Standard roster message' }}</td><td class="px-5 py-4"><span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $sent->status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">{{ ucfirst($sent->status) }}</span></td><td class="max-w-md px-5 py-4 text-sm {{ $sent->error_message ? 'text-red-700' : 'text-gray-500' }}">{{ $sent->error_message ?: ($sent->twilio_sid ? 'Twilio SID: '.$sent->twilio_sid : '—') }}</td><td class="px-5 py-4 text-sm text-gray-500">{{ ($sent->sent_at ?? $sent->created_at)->diffForHumans() }}</td></tr>
+        @empty<tr><td colspan="5" class="p-8 text-center text-gray-500">No messages sent yet.</td></tr>@endforelse
     </tbody></table></div>
 </div>
 @endsection

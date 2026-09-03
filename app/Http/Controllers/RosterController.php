@@ -145,6 +145,7 @@ class RosterController extends Controller
 
         $sent = 0;
         $failed = 0;
+        $failureReasons = [];
         $missingPhone = [];
         foreach ($shifts->groupBy('employee_id') as $employeeShifts) {
             $employee = $employeeShifts->first()->employee;
@@ -184,6 +185,7 @@ class RosterController extends Controller
             } catch (Throwable $exception) {
                 report($exception);
                 $message->update(['status' => 'failed', 'error_message' => $exception->getMessage()]);
+                $failureReasons[] = $exception->getMessage();
                 $failed++;
             }
         }
@@ -191,6 +193,7 @@ class RosterController extends Controller
         $summary = "Weekly roster processed: {$sent} sent";
         if ($failed) {
             $summary .= ", {$failed} failed";
+            $summary .= '. Twilio: '.collect($failureReasons)->unique()->take(2)->join(' | ');
         }
         if ($missingPhone) {
             $summary .= '. Missing mobile number: '.implode(', ', $missingPhone);
