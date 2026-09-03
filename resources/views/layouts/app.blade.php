@@ -138,6 +138,9 @@
                 </div>
             </div>
         @endif
+        @if(session('warning'))
+            <div class="container mx-auto mt-6 px-4"><div class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800" role="alert">{{ session('warning') }}</div></div>
+        @endif
 
         {{-- 2. The dynamic content from your views (create.blade.php, etc.) will appear here --}}
         @yield('content')

@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('leave/{leaveRequest}/review', [LeaveRequestController::class, 'review'])->name('leave.review');
         Route::get('roster', [RosterController::class, 'index'])->name('roster.index');
         Route::post('roster', [RosterController::class, 'store'])->name('roster.store');
+        Route::post('roster/send-weekly', [RosterController::class, 'sendWeeklyRoster'])->name('roster.send-weekly');
         Route::delete('roster/{rosterShift}', [RosterController::class, 'destroy'])->name('roster.destroy');
         Route::get('roster/print', [RosterController::class, 'print'])->name('roster.print');
         Route::get('roster/pdf', [RosterController::class, 'downloadPdf'])->name('roster.pdf');

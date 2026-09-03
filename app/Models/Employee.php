@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
-    protected $fillable = ['name', 'email', 'base_rate', 'noahface_id', 'award_id', 'employment_type', 'annual_leave_allowance'];
+    protected $fillable = ['name', 'email', 'phone', 'base_rate', 'noahface_id', 'award_id', 'employment_type', 'annual_leave_allowance'];
 
     // Link to the Award (Rules)
     public function award(): BelongsTo

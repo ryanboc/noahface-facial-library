@@ -20,6 +20,7 @@ class StoreEmployeeRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('employees')->ignore($employeeId)],
+            'phone' => ['nullable', 'regex:/^\+[1-9]\d{7,14}$/'],
             'base_rate' => 'required|numeric|min:0',
             'noahface_id' => ['required', 'string', Rule::unique('employees')->ignore($employeeId)],
 
@@ -30,6 +31,13 @@ class StoreEmployeeRequest extends FormRequest
             'account_role' => ['nullable', Rule::in(['employee', 'manager', 'executive'])],
             'company_ids' => ['sometimes', 'array'],
             'company_ids.*' => ['integer', 'distinct', 'exists:companies,id'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'phone.regex' => 'Enter the mobile number in international format, for example +61412345678.',
         ];
     }
 }

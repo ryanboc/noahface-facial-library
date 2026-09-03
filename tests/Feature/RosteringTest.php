@@ -8,6 +8,7 @@ use App\Models\LeaveRequest;
 use App\Models\RosterShift;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RosteringTest extends TestCase
@@ -20,6 +21,46 @@ class RosteringTest extends TestCase
         $employee->companies()->attach(Company::where('name', 'Inglewood Farms')->firstOrFail());
 
         return $employee;
+    }
+
+    public function test_manager_can_bulk_send_the_weekly_roster(): void
+    {
+        config(['services.twilio.account_sid' => 'AC123', 'services.twilio.auth_token' => 'secret', 'services.twilio.from' => '+15551234567']);
+        Http::fake(['api.twilio.com/*' => Http::response(['sid' => 'SM123', 'status' => 'queued'], 201)]);
+        $manager = User::factory()->create();
+        $employee = $this->employee();
+        $employee->update(['phone' => '+61412345678']);
+        $company = Company::where('name', 'Inglewood Farms')->firstOrFail();
+        RosterShift::create([
+            'employee_id' => $employee->id, 'company_id' => $company->id, 'shift_date' => '2026-09-08',
+            'start_time' => '09:00', 'end_time' => '17:00', 'role' => 'Supervisor',
+        ]);
+
+        $this->actingAs($manager)->post(route('roster.send-weekly'), [
+            'week' => '2026-09-07', 'company_id' => $company->id,
+        ])->assertRedirect(route('roster.index', ['week' => '2026-09-07', 'company_id' => $company->id]));
+
+        $this->assertDatabaseHas('text_messages', ['recipient' => '+61412345678', 'status' => 'queued']);
+        Http::assertSent(fn ($request) => str_contains($request['Body'], 'Tue 08 Sep 9:00 AM-5:00 PM (Supervisor)'));
+    }
+
+    public function test_bulk_roster_send_skips_employees_without_mobile_numbers(): void
+    {
+        Http::fake();
+        $manager = User::factory()->create();
+        $employee = $this->employee();
+        $company = Company::where('name', 'Inglewood Farms')->firstOrFail();
+        RosterShift::create([
+            'employee_id' => $employee->id, 'company_id' => $company->id, 'shift_date' => '2026-09-08',
+            'start_time' => '09:00', 'end_time' => '17:00',
+        ]);
+
+        $this->actingAs($manager)->post(route('roster.send-weekly'), [
+            'week' => '2026-09-07', 'company_id' => $company->id,
+        ])->assertSessionHas('warning', fn ($message) => str_contains($message, 'Missing mobile number: Alex Smith'));
+
+        Http::assertNothingSent();
+        $this->assertDatabaseCount('text_messages', 0);
     }
 
     public function test_manager_can_submit_and_approve_leave(): void

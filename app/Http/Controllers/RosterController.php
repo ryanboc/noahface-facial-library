@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\MessageTemplate;
 use App\Models\RosterShift;
+use App\Models\TextMessage;
+use App\Services\TwilioService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class RosterController extends Controller
 {
@@ -30,8 +34,10 @@ class RosterController extends Controller
         $totalHours = $shifts->sum(fn ($shift) => $this->duration($shift->start_time, $shift->end_time));
         $employeeHours = $shifts->groupBy('employee_id')->map(fn ($employeeShifts) => $employeeShifts->sum(fn ($shift) => $this->duration($shift->start_time, $shift->end_time))
         );
+        $messageTemplates = MessageTemplate::orderBy('name')->get();
+        $rosteredEmployees = $shifts->pluck('employee')->unique('id')->values();
 
-        return view('roster.index', compact('weekStart', 'weekEnd', 'companies', 'selectedCompany', 'employees', 'shifts', 'leave', 'days', 'totalHours', 'employeeHours'));
+        return view('roster.index', compact('weekStart', 'weekEnd', 'companies', 'selectedCompany', 'employees', 'shifts', 'leave', 'days', 'totalHours', 'employeeHours', 'messageTemplates', 'rosteredEmployees'));
     }
 
     public function store(Request $request)
@@ -117,6 +123,81 @@ class RosterController extends Controller
         return Pdf::loadView('roster.print', $data)
             ->setPaper('a4', 'landscape')
             ->download($filename);
+    }
+
+    public function sendWeeklyRoster(Request $request, TwilioService $twilio)
+    {
+        $data = $request->validate([
+            'week' => ['required', 'date'],
+            'company_id' => ['required', 'exists:companies,id'],
+            'message_template_id' => ['nullable', 'exists:message_templates,id'],
+        ]);
+        $weekStart = Carbon::parse($data['week'])->startOfWeek();
+        $weekEnd = $weekStart->copy()->endOfWeek();
+        $company = Company::findOrFail($data['company_id']);
+        $template = isset($data['message_template_id'])
+            ? MessageTemplate::findOrFail($data['message_template_id'])
+            : null;
+        $shifts = RosterShift::with('employee')
+            ->where('company_id', $company->id)
+            ->whereBetween('shift_date', [$weekStart, $weekEnd])
+            ->orderBy('shift_date')->orderBy('start_time')->get();
+
+        $sent = 0;
+        $failed = 0;
+        $missingPhone = [];
+        foreach ($shifts->groupBy('employee_id') as $employeeShifts) {
+            $employee = $employeeShifts->first()->employee;
+            if (! $employee->phone || ! preg_match('/^\+[1-9]\d{7,14}$/', $employee->phone)) {
+                $missingPhone[] = $employee->name;
+
+                continue;
+            }
+
+            $schedule = $employeeShifts->map(function ($shift) {
+                $details = collect([$shift->role, $shift->location])->filter()->join(', ');
+
+                return $shift->shift_date->format('D d M').' '.Carbon::parse($shift->start_time)->format('g:i A').'-'.Carbon::parse($shift->end_time)->format('g:i A').($details ? " ({$details})" : '');
+            })->join("\n");
+            $defaultBody = "Hi {name}, your roster for the week of {week} is:\n{roster}";
+            $templateBody = $template?->body ?? $defaultBody;
+            if (! str_contains($templateBody, '{roster}')) {
+                $templateBody .= "\n\nYour roster:\n{roster}";
+            }
+            $body = strtr($templateBody, [
+                '{name}' => $employee->name,
+                '{week}' => $weekStart->format('d M Y'),
+                '{company}' => $company->name,
+                '{roster}' => $schedule,
+            ]);
+            $message = TextMessage::create([
+                'message_template_id' => $template?->id,
+                'sent_by' => $request->user()->id,
+                'recipient' => $employee->phone,
+                'body' => $body,
+            ]);
+
+            try {
+                $result = $twilio->send($employee->phone, $body);
+                $message->update(['twilio_sid' => $result['sid'], 'status' => $result['status'], 'sent_at' => now()]);
+                $sent++;
+            } catch (Throwable $exception) {
+                report($exception);
+                $message->update(['status' => 'failed', 'error_message' => $exception->getMessage()]);
+                $failed++;
+            }
+        }
+
+        $summary = "Weekly roster processed: {$sent} sent";
+        if ($failed) {
+            $summary .= ", {$failed} failed";
+        }
+        if ($missingPhone) {
+            $summary .= '. Missing mobile number: '.implode(', ', $missingPhone);
+        }
+
+        return redirect()->route('roster.index', ['week' => $weekStart->toDateString(), 'company_id' => $company->id])
+            ->with($sent ? 'success' : 'warning', $summary.'.');
     }
 
     private function printData(Request $request): array

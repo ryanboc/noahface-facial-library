@@ -11,6 +11,23 @@
 
     <div class="grid sm:grid-cols-3 gap-4 mb-6"><div class="bg-white border rounded-xl p-4"><p class="text-sm text-gray-500">Scheduled shifts</p><p class="text-2xl font-bold">{{ $shifts->count() }}</p></div><div class="bg-white border rounded-xl p-4"><p class="text-sm text-gray-500">Rostered hours</p><p class="text-2xl font-bold">{{ number_format($totalHours, 1) }}</p></div><div class="bg-white border rounded-xl p-4"><p class="text-sm text-gray-500">People on leave</p><p class="text-2xl font-bold">{{ $leave->pluck('employee_id')->unique()->count() }}</p></div></div>
 
+    <form method="POST" action="{{ route('roster.send-weekly') }}" class="mb-6 rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm" onsubmit="return confirm('Send this weekly roster to every rostered employee with a mobile number?');">
+        @csrf
+        <input type="hidden" name="week" value="{{ $weekStart->toDateString() }}">
+        <input type="hidden" name="company_id" value="{{ $selectedCompany?->id }}">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <h2 class="font-bold text-green-950">Send weekly roster by SMS</h2>
+                <p class="mt-1 text-sm text-green-800">{{ $rosteredEmployees->count() }} rostered {{ Str::plural('employee', $rosteredEmployees->count()) }} · {{ $rosteredEmployees->whereNull('phone')->count() }} missing {{ Str::plural('mobile number', $rosteredEmployees->whereNull('phone')->count()) }}</p>
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div><label for="roster-message-template" class="mb-1 block text-sm font-semibold">Message template <span class="font-normal text-gray-500">(optional)</span></label><select id="roster-message-template" name="message_template_id" class="min-w-64 rounded-lg border bg-white px-3 py-2.5"><option value="">Standard roster message</option>@foreach($messageTemplates as $template)<option value="{{ $template->id }}">{{ $template->name }}</option>@endforeach</select></div>
+                <button type="submit" @disabled($shifts->isEmpty() || !$selectedCompany) class="rounded-lg bg-green-600 px-5 py-2.5 font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">Send to everyone rostered</button>
+            </div>
+        </div>
+        <p class="mt-3 text-xs text-green-800">Templates support <code>{name}</code>, <code>{week}</code>, <code>{company}</code>, and <code>{roster}</code>. The employee's schedule is appended automatically if <code>{roster}</code> is omitted.</p>
+    </form>
+
     <div class="grid xl:grid-cols-[1fr_330px] gap-6">
         <div class="bg-white border rounded-xl shadow-sm overflow-x-auto">
             <div class="grid grid-cols-7 min-w-[980px]">

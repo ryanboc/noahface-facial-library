@@ -27,6 +27,14 @@
             @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
         </div>
 
+        <div>
+            <label class="block text-gray-700 font-bold mb-2">Mobile Number</label>
+            <input type="tel" name="phone" value="{{ old('phone', $employee->phone ?? '') }}"
+                   class="w-full border p-2 rounded" placeholder="+61412345678">
+            <p class="text-xs text-gray-500 mt-1">Required for roster SMS. Include the country code.</p>
+            @error('phone') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+        </div>
+
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">
                 Base Hourly Rate ($)
