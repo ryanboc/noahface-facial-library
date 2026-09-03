@@ -8,10 +8,10 @@
     </style>
 </head>
 <body class="{{ ($isPdf ?? false) ? 'pdf' : '' }}">
-    @unless($isPdf ?? false)<div class="toolbar no-print"><a class="print-button" style="text-decoration:none;margin-right:6px;background:#2563eb" href="{{ route('roster.pdf', ['week' => $weekStart->toDateString()]) }}">Download PDF</a><button class="print-button" onclick="window.print()">Print roster</button></div>@endunless
+    @unless($isPdf ?? false)<div class="toolbar no-print"><a class="print-button" style="text-decoration:none;margin-right:6px;background:#2563eb" href="{{ route('roster.pdf', ['week' => $weekStart->toDateString(), 'company_id' => $selectedCompany?->id]) }}">Download PDF</a><button class="print-button" onclick="window.print()">Print roster</button></div>@endunless
     <table class="sheet">
         <thead>
-            <tr class="title"><th colspan="7">Rosters for week commencing {{ $weekStart->format('jS F Y') }}</th></tr>
+            <tr class="title"><th colspan="7">{{ $selectedCompany?->name }} — Rosters for week commencing {{ $weekStart->format('jS F Y') }}</th></tr>
             <tr class="days">
                 @foreach($days as $day)<th>{{ $day->format('l, jS F Y') }}</th>@endforeach
             </tr>
