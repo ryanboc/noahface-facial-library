@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Company;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,6 +49,23 @@ class EmployeeIndexTest extends TestCase
             ->get(route('employees.index', ['per_page' => 5000]))
             ->assertOk()
             ->assertViewHas('employees', fn ($employees) => $employees->perPage() === 10);
+    }
+
+    public function test_employees_can_be_filtered_by_company(): void
+    {
+        $user = User::factory()->create();
+        $inglewood = Company::where('name', 'Inglewood Farms')->firstOrFail();
+        $eden = Company::where('name', 'Eden Farms')->firstOrFail();
+        $alex = $this->employee('Alex Smith', 'alex@example.com', 'NF-100');
+        $jordan = $this->employee('Jordan Jones', 'jordan@example.com', 'NF-200');
+        $alex->companies()->attach($inglewood);
+        $jordan->companies()->attach($eden);
+
+        $this->actingAs($user)->get(route('employees.index', ['company_id' => $inglewood->id]))
+            ->assertOk()
+            ->assertSee('Alex Smith')
+            ->assertDontSee('Jordan Jones')
+            ->assertViewHas('companyId', $inglewood->id);
     }
 
     private function employee(string $name, string $email, string $noahfaceId): Employee

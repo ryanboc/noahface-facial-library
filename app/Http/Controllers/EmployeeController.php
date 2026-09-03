@@ -13,8 +13,11 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate(['company_id' => ['nullable', 'integer', 'exists:companies,id']]);
         $search = trim((string) $request->query('search', ''));
         $perPage = (int) $request->query('per_page', 10);
+        $companyId = $request->integer('company_id') ?: null;
+        $companies = Company::orderBy('name')->get();
 
         if (! in_array($perPage, [10, 25, 50, 100], true)) {
             $perPage = 10;
@@ -22,6 +25,7 @@ class EmployeeController extends Controller
 
         // Eager load the award so we can display "Poultry Award" instead of "ID: 1".
         $employees = Employee::with(['award', 'companies'])
+            ->when($companyId, fn ($query) => $query->whereHas('companies', fn ($query) => $query->whereKey($companyId)))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -36,7 +40,7 @@ class EmployeeController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('employees.index', compact('employees'));
+        return view('employees.index', compact('employees', 'companies', 'companyId'));
     }
 
     public function create()
