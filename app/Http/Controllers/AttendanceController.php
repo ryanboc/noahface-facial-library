@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceLog;
+use App\Models\Company;
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
@@ -27,18 +27,24 @@ class AttendanceController extends Controller
         $startDate = $request->input('start_date', now()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
         $isExport = $request->has('export');
+        $request->validate(['company_id' => ['nullable', 'integer', 'exists:companies,id']]);
+        $companyId = $request->integer('company_id') ?: null;
+        $companies = Company::orderBy('name')->get();
+        $selectedCompany = $companyId ? $companies->firstWhere('id', $companyId) : null;
 
         // 2. QUERY EMPLOYEES (Apply Search Filter)
         $query = \App\Models\Employee::query();
-        
+
+        $query->when($companyId, fn ($query) => $query->whereHas('companies', fn ($query) => $query->whereKey($companyId)));
+
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
         }
 
         // 3. EAGER LOAD LOGS (Apply Date Filter)
-        $employees = $query->with(['attendanceLogs' => function($q) use ($startDate, $endDate) {
+        $employees = $query->with(['attendanceLogs' => function ($q) use ($startDate, $endDate) {
             $q->orderBy('clock_time', 'asc');
-            
+
             // Only filter by date if provided
             if ($startDate) {
                 $q->whereDate('clock_time', '>=', $startDate);
@@ -54,45 +60,45 @@ class AttendanceController extends Controller
         foreach ($employees as $employee) {
             $logs = $employee->attendanceLogs;
             $currentShiftStart = null;
-            
+
             foreach ($logs as $log) {
                 $type = strtolower(str_replace(' ', '', $log->event_type));
-                
+
                 // FIND START
-                if (($type === 'clockin' || $type === 'starttask') && !$currentShiftStart) {
+                if (($type === 'clockin' || $type === 'starttask') && ! $currentShiftStart) {
                     $currentShiftStart = $log;
                 }
                 // FIND END
                 elseif (($type === 'clockout' || $type === 'endtask') && $currentShiftStart) {
-                    
+
                     // Use your fixed logic (Start -> End)
                     $start = \Carbon\Carbon::parse($currentShiftStart->clock_time);
-                    $end   = \Carbon\Carbon::parse($log->clock_time);
+                    $end = \Carbon\Carbon::parse($log->clock_time);
                     $duration = $start->diffInMinutes($end) / 60; // Fixed order
-                    
-                    $rateInfo = $employee->getRateDetails($start); 
+
+                    $rateInfo = $employee->getRateDetails($start);
                     $totalPay = $duration * $rateInfo['final_rate'];
 
-                    $startPayload = is_array($currentShiftStart->raw_payload) 
-                            ? $currentShiftStart->raw_payload 
+                    $startPayload = is_array($currentShiftStart->raw_payload)
+                            ? $currentShiftStart->raw_payload
                             : json_decode($currentShiftStart->raw_payload, true);
 
                     $timesheets[] = [
-                        'date_raw'  => $start->format('Y-m-d'), // For sorting if needed
-                        'date'      => $start->format('D, d M Y'),
-                        'employee'  => $employee->name,
-                        'start'     => $start->format('h:i A'),
-                        'end'       => $end->format('h:i A'),
-                        'duration'  => number_format($duration, 2) . ' hrs',
-                        'rate_label'=> $rateInfo['label'], // Added label for CSV context
-                        'rate'      => '$' . number_format($rateInfo['final_rate'], 2) . '/hr',
-                        'total_pay' => '$' . number_format($totalPay, 2),
+                        'date_raw' => $start->format('Y-m-d'), // For sorting if needed
+                        'date' => $start->format('D, d M Y'),
+                        'employee' => $employee->name,
+                        'start' => $start->format('h:i A'),
+                        'end' => $end->format('h:i A'),
+                        'duration' => number_format($duration, 2).' hrs',
+                        'rate_label' => $rateInfo['label'], // Added label for CSV context
+                        'rate' => '$'.number_format($rateInfo['final_rate'], 2).'/hr',
+                        'total_pay' => '$'.number_format($totalPay, 2),
                         'total_pay_raw' => $totalPay, // For summing if needed
-                        'device'      => $startPayload['device'] ?? 'Unknown Device',
+                        'device' => $startPayload['device'] ?? 'Unknown Device',
                         'temperature' => $startPayload['temperature'] ?? 'N/A',
-                        'method'      => $startPayload['method'] ?? 'N/A',
+                        'method' => $startPayload['method'] ?? 'N/A',
                     ];
-                    
+
                     $currentShiftStart = null;
                 }
             }
@@ -101,8 +107,8 @@ class AttendanceController extends Controller
         // 5. HANDLE CSV EXPORT
         if ($isExport) {
             $headers = ['Date', 'Employee', 'Start Time', 'End Time', 'Duration', 'Rate Label', 'Hourly Rate', 'Total Pay'];
-            
-            $callback = function() use ($timesheets, $headers) {
+
+            $callback = function () use ($timesheets, $headers) {
                 $file = fopen('php://output', 'w');
                 fputcsv($file, $headers);
 
@@ -115,19 +121,19 @@ class AttendanceController extends Controller
                         $row['duration'],
                         $row['rate_label'],
                         $row['rate'],
-                        $row['total_pay']
+                        $row['total_pay'],
                     ]);
                 }
                 fclose($file);
             };
 
             return new StreamedResponse($callback, 200, [
-                "Content-Type" => "text/csv",
-                "Content-Disposition" => "attachment; filename=timesheets-" . date('Y-m-d') . ".csv",
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename=timesheets-'.date('Y-m-d').'.csv',
             ]);
         }
 
         // 6. RETURN VIEW (Pass current filters back to view)
-        return view('attendance.timesheet', compact('timesheets', 'search', 'startDate', 'endDate'));
+        return view('attendance.timesheet', compact('timesheets', 'search', 'startDate', 'endDate', 'companies', 'selectedCompany', 'companyId'));
     }
 }

@@ -3,13 +3,22 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Payroll Timesheets</h1>
+        <div><h1 class="text-3xl font-bold text-gray-800">Payroll Timesheets</h1><p class="mt-1 text-gray-500">{{ $selectedCompany?->name ?? 'All companies' }}</p></div>
     </div>
 
     {{-- FILTER BAR --}}
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
         <form method="GET" action="{{ route('attendance.timesheet') }}" class="flex flex-wrap items-end gap-4">
             
+            {{-- Search Input --}}
+            <div class="w-full md:w-1/5">
+                <label for="timesheet-company" class="block text-gray-700 text-sm font-bold mb-2">Company / Workplace</label>
+                <select id="timesheet-company" name="company_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">All companies</option>
+                    @foreach($companies as $company)<option value="{{ $company->id }}" @selected($companyId === $company->id)>{{ $company->name }}</option>@endforeach
+                </select>
+            </div>
+
             {{-- Search Input --}}
             <div class="w-full md:w-1/4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Employee Name</label>
@@ -90,7 +99,7 @@
         @empty
             <tr>
                 <td colspan="7" class="text-center py-8 text-gray-500">
-                    No shifts found for this period.
+                    No shifts found for this company and period.
                 </td>
             </tr>
         @endforelse
