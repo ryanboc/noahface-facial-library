@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-7">
         <div><p class="text-sm font-semibold uppercase tracking-wide text-blue-600">People management</p><h1 class="text-3xl font-bold text-gray-900">Leave approvals</h1><p class="mt-1 text-gray-500">Review requests and keep availability accurate for rostering.</p></div>
-        <div class="flex gap-2">@foreach(['' => 'All', 'pending' => 'Pending', 'approved' => 'Approved', 'declined' => 'Declined'] as $value => $label)<a href="{{ route('leave.index', $value ? ['status' => $value] : []) }}" class="px-3 py-2 rounded-lg text-sm font-medium {{ $status === $value ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600' }}">{{ $label }}</a>@endforeach</div>
+        <div class="flex flex-wrap gap-2"><a href="{{ route('leave.calendar') }}" class="px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white">Calendar view</a>@foreach(['' => 'All', 'pending' => 'Pending', 'approved' => 'Approved', 'declined' => 'Declined'] as $value => $label)<a href="{{ route('leave.index', $value ? ['status' => $value] : []) }}" class="px-3 py-2 rounded-lg text-sm font-medium {{ $status === $value ? 'bg-gray-900 text-white' : 'bg-white border text-gray-600' }}">{{ $label }}</a>@endforeach</div>
     </div>
 
     <div class="grid lg:grid-cols-[340px_1fr] gap-6">

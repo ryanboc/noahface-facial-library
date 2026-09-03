@@ -31,6 +31,7 @@
                 <a href="{{ route('attendance.timesheet') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Timesheets</a>
                 <a href="{{ route('roster.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Roster</a>
                 <a href="{{ route('leave.index') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Leave approvals</a>
+                <a href="{{ route('leave.calendar') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Leave calendar</a>
                 @endif
             </div>
 
@@ -89,6 +90,7 @@
             <a href="{{ route('attendance.timesheet') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Timesheets</a>
             <a href="{{ route('roster.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Roster</a>
             <a href="{{ route('leave.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Leave approvals</a>
+            <a href="{{ route('leave.calendar') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50">Leave calendar</a>
             @endif
         </div>
         

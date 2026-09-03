@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('employees', EmployeeController::class);
         Route::resource('companies', CompanyController::class)->except('show');
         Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
+        Route::get('leave/calendar', [LeaveRequestController::class, 'calendar'])->name('leave.calendar');
         Route::get('leave', [LeaveRequestController::class, 'index'])->name('leave.index');
         Route::post('leave', [LeaveRequestController::class, 'store'])->name('leave.store');
         Route::patch('leave/{leaveRequest}/review', [LeaveRequestController::class, 'review'])->name('leave.review');
