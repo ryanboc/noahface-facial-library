@@ -1,5 +1,3 @@
-@props(['message' => null])
-
 <form method="POST" action="{{ $message ? route('messages.update', $message) : route('messages.store') }}" class="max-w-2xl space-y-5 rounded-xl border bg-white p-6 shadow-sm">
     @csrf
     @if($message) @method('PUT') @endif
