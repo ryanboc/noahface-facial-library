@@ -9,6 +9,7 @@ use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,10 @@ Route::middleware('auth')->group(function () {
         Route::post('messages/{message}/send', [MessageTemplateController::class, 'send'])->name('messages.send');
         Route::resource('messages', MessageTemplateController::class)->except('show');
         Route::get('attendance/timesheet', [AttendanceController::class, 'timesheet'])->name('attendance.timesheet');
+        Route::get('payslips', [PayslipController::class, 'index'])->name('payslips.index');
+        Route::get('payslips/{employee}', [PayslipController::class, 'show'])->name('payslips.show');
+        Route::get('payslips/{employee}/pdf', [PayslipController::class, 'pdf'])->name('payslips.pdf');
+        Route::post('payslips/email', [PayslipController::class, 'email'])->name('payslips.email');
         Route::get('leave/calendar', [LeaveRequestController::class, 'calendar'])->name('leave.calendar');
         Route::get('leave', [LeaveRequestController::class, 'index'])->name('leave.index');
         Route::post('leave', [LeaveRequestController::class, 'store'])->name('leave.store');

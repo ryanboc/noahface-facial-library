@@ -1,0 +1,1 @@
+<p>Hi {{ $payslip['employee']->name }},</p><p>Your payslip for {{ $payslip['period_start']->format('d M Y') }} to {{ $payslip['period_end']->format('d M Y') }} is attached.</p><p><strong>Gross pay: ${{ number_format($payslip['gross_pay'], 2) }}</strong></p><p>Regards,<br>{{ config('app.name') }}</p>
