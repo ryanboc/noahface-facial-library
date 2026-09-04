@@ -54,12 +54,9 @@ class Employee extends Model
      * Smart wrapper: You give it a date, it figures out the category and returns the rate.
      * Usage: $employee->getRateForDate($log->clock_time);
      */
-    public function getRateForDate($date)
+    public function getRateForDate($date, $endDate = null)
     {
-        $carbonDate = \Carbon\Carbon::parse($date);
-
-        // 1. Default to the day of the week (e.g., "Monday", "Sunday")
-        $category = $carbonDate->format('l');
+        $category = $this->rateCategory($date, $endDate);
 
         // 2. (Optional) Check for Public Holidays here
         // $isHoliday = ... check your holidays table ...
@@ -73,16 +70,16 @@ class Employee extends Model
         return $rate ?? 'Ordinary (Base)';
     }
 
-    public function getRateDetails($date)
+    public function getRateDetails($date, $endDate = null)
     {
         $carbonDate = \Carbon\Carbon::parse($date);
-        $dayName = $carbonDate->format('l'); // e.g., "Monday", "Saturday"
+        $category = $this->rateCategory($carbonDate, $endDate);
 
         // 1. Try to find a rule matching the exact Day Name (e.g., "Saturday", "Sunday")
         // Your seeder currently has entries for 'Saturday' and 'Sunday'.
         $rule = $this->award->rates()
             ->where('employment_type', $this->employment_type) // e.g. 'Casual'
-            ->where('category', $dayName)
+            ->where('category', $category)
             ->first();
 
         // 2. If no specific day rule is found (e.g., it's a Monday-Friday),
@@ -116,5 +113,28 @@ class Employee extends Model
             'multiplier' => $multiplier,
             'final_rate' => $baseRate * $multiplier,
         ];
+    }
+
+    /**
+     * Resolve the award category for a shift. Under the Poultry Processing
+     * Award, a night shift finishes after midnight and no later than 8:00am.
+     * Weekend penalties take precedence over the weekday night differential.
+     */
+    private function rateCategory($startDate, $endDate = null): string
+    {
+        $start = \Carbon\Carbon::parse($startDate);
+        $dayName = $start->format('l');
+
+        if (in_array($dayName, ['Saturday', 'Sunday'], true) || $endDate === null) {
+            return $dayName;
+        }
+
+        $end = \Carbon\Carbon::parse($endDate);
+        $midnightAfterStart = $start->copy()->addDay()->startOfDay();
+        $nightShiftCutoff = $midnightAfterStart->copy()->setTime(8, 0);
+
+        return $end->gt($midnightAfterStart) && $end->lte($nightShiftCutoff)
+            ? 'Night'
+            : $dayName;
     }
 }

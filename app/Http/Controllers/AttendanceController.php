@@ -169,7 +169,7 @@ class AttendanceController extends Controller
                     $workedMinutes = max(0, $start->diffInMinutes($end) - $breakMinutes);
                     $duration = $workedMinutes / 60;
 
-                    $rateInfo = $employee->getRateDetails($start);
+                    $rateInfo = $employee->getRateDetails($start, $end);
                     $totalPay = $duration * $rateInfo['final_rate'];
 
                     $startPayload = is_array($currentShiftStart->raw_payload)

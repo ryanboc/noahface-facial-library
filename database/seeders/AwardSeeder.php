@@ -33,12 +33,13 @@ class AwardSeeder extends Seeder
             ['Casual', 'Overtime', '120%'],
             ['Casual', 'Public Holiday', '200%'],
             ['Casual', 'Early Morning', '108%'],
-            ['Casual', 'Night', '112%'],
+            ['Casual', 'Night', '140%'],
             ['Casual', 'Saturday', '120%'],
             ['Casual', 'Sunday', '140%'],
             ['Full Time/Part Time', 'Overtime', '150%'],
             ['Full Time/Part Time', 'Overtime after 3hrs', '200%'],
             ['Full Time/Part Time', 'Public Holiday', '250%'],
+            ['Full Time/Part Time', 'Night', '115%'],
         ];
 
         foreach ($poultryRates as $rate) {
