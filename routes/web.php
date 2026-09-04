@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,11 @@ Route::middleware('guest')->group(function () {
     // Login
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+
+    Route::get('forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'store'])->name('password.email');
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 
     // Registration (NEW)
     Route::get('register', [AuthController::class, 'showRegistrationForm'])->name('register');
