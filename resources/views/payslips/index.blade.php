@@ -1,13 +1,13 @@
 @extends('layouts.app')
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div class="mb-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
         <div><p class="text-sm font-semibold text-blue-600">Payroll</p><h1 class="text-3xl font-bold tracking-tight text-slate-950">Payslips</h1><p class="mt-1 text-sm text-slate-500">Clocked time less recorded breaks, with award penalties and weekly overtime.</p></div>
-        <form method="GET" class="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <label class="text-xs font-semibold text-slate-600">From<input class="mt-1 block rounded-lg border-slate-300" type="date" name="start_date" value="{{ $start->toDateString() }}"></label>
-            <label class="text-xs font-semibold text-slate-600">To<input class="mt-1 block rounded-lg border-slate-300" type="date" name="end_date" value="{{ $end->toDateString() }}"></label>
-            <label class="text-xs font-semibold text-slate-600">Company<select class="mt-1 block rounded-lg border-slate-300" name="company_id"><option value="">All companies</option>@foreach($companies as $company)<option value="{{ $company->id }}" @selected(request('company_id') == $company->id)>{{ $company->name }}</option>@endforeach</select></label>
-            <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Apply</button>
+        <form method="GET" class="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-[10.5rem_10.5rem_minmax(13rem,1fr)_auto] lg:items-end">
+            <label class="block text-xs font-semibold text-slate-600"><span class="mb-2 block">From</span><input class="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" type="date" name="start_date" value="{{ $start->toDateString() }}"></label>
+            <label class="block text-xs font-semibold text-slate-600"><span class="mb-2 block">To</span><input class="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" type="date" name="end_date" value="{{ $end->toDateString() }}"></label>
+            <label class="block text-xs font-semibold text-slate-600 sm:col-span-2 lg:col-span-1"><span class="mb-2 block">Company</span><select class="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" name="company_id"><option value="">All companies</option>@foreach($companies as $company)<option value="{{ $company->id }}" @selected(request('company_id') == $company->id)>{{ $company->name }}</option>@endforeach</select></label>
+            <button class="h-11 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 sm:col-span-2 lg:col-span-1">Apply filters</button>
         </form>
     </div>
     <form method="POST" action="{{ route('payslips.email') }}">@csrf
