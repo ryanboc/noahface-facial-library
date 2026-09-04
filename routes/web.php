@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('management')->group(function () {
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('attendance/status', [AttendanceController::class, 'status'])->name('attendance.status');
         Route::resource('awards', AwardController::class);
         Route::resource('employees', EmployeeController::class);
         Route::resource('companies', CompanyController::class)->except('show');

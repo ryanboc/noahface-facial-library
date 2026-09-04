@@ -52,7 +52,8 @@
                                 </button>
                                 <div data-nav-panel class="absolute left-0 top-full hidden w-56 pt-3">
                                     <div class="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10">
-                                        <a href="{{ route('attendance.timesheet') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.*') ? $navActive : $navIdle }}"><span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-emerald-600"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M12 8v4l3 2"/></svg></span> Timesheets</a>
+                                        <a href="{{ route('attendance.status') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.status') ? $navActive : $navIdle }}"><span class="grid h-8 w-8 place-items-center rounded-lg bg-teal-50 text-teal-600"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 2a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 21a6 6 0 0 1 12 0m0 0a5 5 0 0 1 8 0"/></svg></span> Who's working</a>
+                                        <a href="{{ route('attendance.timesheet') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.timesheet') ? $navActive : $navIdle }}"><span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-emerald-600"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M12 8v4l3 2"/></svg></span> Timesheets</a>
                                         <a href="{{ route('roster.index') }}" class="{{ $navItem }} {{ request()->routeIs('roster.*') ? $navActive : $navIdle }}"><span class="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-blue-600"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" stroke-width="2"/><path stroke-width="2" d="M8 3v4M16 3v4M4 10h16"/></svg></span> Roster</a>
                                     </div>
                                 </div>
@@ -128,7 +129,8 @@
                                 <a href="{{ route('awards.index') }}" class="{{ $navItem }} {{ request()->routeIs('awards.*') ? $navActive : $navIdle }}">Awards</a>
                             </div>
                             <div><p class="mb-2 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Work</p>
-                                <a href="{{ route('attendance.timesheet') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.*') ? $navActive : $navIdle }}">Timesheets</a>
+                                <a href="{{ route('attendance.status') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.status') ? $navActive : $navIdle }}">Who's working</a>
+                                <a href="{{ route('attendance.timesheet') }}" class="{{ $navItem }} {{ request()->routeIs('attendance.timesheet') ? $navActive : $navIdle }}">Timesheets</a>
                                 <a href="{{ route('roster.index') }}" class="{{ $navItem }} {{ request()->routeIs('roster.*') ? $navActive : $navIdle }}">Roster</a>
                                 <a href="{{ route('messages.index') }}" class="{{ $navItem }} {{ request()->routeIs('messages.*') ? $navActive : $navIdle }}">Messages</a>
                             </div>

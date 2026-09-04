@@ -10,6 +10,52 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
+    public function status(Request $request)
+    {
+        $request->validate(['company_id' => ['nullable', 'integer', 'exists:companies,id']]);
+
+        $companyId = $request->integer('company_id') ?: null;
+        $companies = Company::orderBy('name')->get();
+        $selectedCompany = $companyId ? $companies->firstWhere('id', $companyId) : null;
+
+        $employees = Employee::query()
+            ->with(['companies', 'attendanceLogs' => fn ($query) => $query
+                ->whereDate('clock_time', today())
+                ->latest('clock_time')])
+            ->when($companyId, fn ($query) => $query->whereHas(
+                'companies',
+                fn ($query) => $query->whereKey($companyId)
+            ))
+            ->orderBy('name')
+            ->get();
+
+        $groups = collect([
+            'clocked_in' => collect(),
+            'on_break' => collect(),
+            'clocked_out' => collect(),
+            'not_clocked_in' => collect(),
+        ]);
+
+        foreach ($employees as $employee) {
+            $latestLog = $employee->attendanceLogs->first();
+            $event = strtolower(preg_replace('/[^a-z0-9]+/i', '', $latestLog?->event_type ?? ''));
+
+            $status = match (true) {
+                in_array($event, ['clockin', 'clockon', 'starttask', 'endbreak', 'breakin'], true) => 'clocked_in',
+                in_array($event, ['startbreak', 'breakstart', 'breakout'], true) => 'on_break',
+                in_array($event, ['clockout', 'endtask'], true) => 'clocked_out',
+                default => 'not_clocked_in',
+            };
+
+            $groups[$status]->push((object) [
+                'employee' => $employee,
+                'latestLog' => $latestLog,
+            ]);
+        }
+
+        return view('attendance.status', compact('groups', 'companies', 'selectedCompany', 'companyId'));
+    }
+
     public function index()
     {
         // Fetch logs and grab the 'Employee' and their 'Award' in one go
