@@ -35,6 +35,22 @@ class PasswordResetTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_password_reset_email_uses_the_branded_design(): void
+    {
+        $user = User::factory()->create(['name' => 'Alex Taylor']);
+        $notification = new ResetPassword('secure-test-token');
+
+        $mail = $notification->toMail($user);
+
+        $this->assertSame('Reset your NoahFace Sync password', $mail->subject);
+        $this->assertSame([
+            'html' => 'emails.auth.reset-password',
+            'text' => 'emails.auth.reset-password-text',
+        ], $mail->view);
+        $this->assertStringContainsString('secure-test-token', $mail->viewData['resetUrl']);
+        $this->assertSame('Alex Taylor', $mail->viewData['name']);
+    }
+
     public function test_user_can_reset_their_password_with_a_valid_token(): void
     {
         $user = User::factory()->create(['password' => Hash::make('old-password')]);
