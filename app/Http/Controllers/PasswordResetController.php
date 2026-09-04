@@ -43,14 +43,18 @@ class PasswordResetController extends Controller
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'reset_two_factor' => ['sometimes', 'boolean'],
         ]);
+
+        $resetTwoFactor = $request->boolean('reset_two_factor');
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password): void {
+            function (User $user, string $password) use ($resetTwoFactor): void {
                 $user->forceFill([
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
+                    'google2fa_secret' => $resetTwoFactor ? null : $user->google2fa_secret,
                 ])->save();
 
                 event(new PasswordReset($user));
@@ -61,6 +65,10 @@ class PasswordResetController extends Controller
             return back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
         }
 
-        return redirect()->route('login')->with('status', 'Your password has been reset. You can now sign in.');
+        $message = $resetTwoFactor
+            ? 'Your password has been reset and two-factor authentication has been disabled. You can now sign in and set it up again.'
+            : 'Your password has been reset. You can now sign in.';
+
+        return redirect()->route('login')->with('status', $message);
     }
 }

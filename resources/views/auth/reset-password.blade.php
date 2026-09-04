@@ -20,6 +20,11 @@
             <div><label for="email" class="mb-2 block font-bold text-gray-700">Email address</label><input id="email" name="email" type="email" value="{{ old('email', $email) }}" required autocomplete="email" class="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
             <div><label for="password" class="mb-2 block font-bold text-gray-700">New password</label><input id="password" name="password" type="password" required autocomplete="new-password" class="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
             <div><label for="password_confirmation" class="mb-2 block font-bold text-gray-700">Confirm new password</label><input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" class="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+            <label class="flex items-start gap-3 rounded border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                <input type="hidden" name="reset_two_factor" value="0">
+                <input name="reset_two_factor" type="checkbox" value="1" class="mt-1 rounded border-gray-300" @checked(old('reset_two_factor'))>
+                <span><strong>Reset two-factor authentication</strong><br>Use this only if you no longer have access to your authenticator. You can enable it again after signing in.</span>
+            </label>
             <button class="w-full rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600">Reset password</button>
         </form>
     </div>

@@ -34,6 +34,8 @@ class AuthController extends Controller
 
             // 4. Does this user have 2FA enabled?
             if ($user->google2fa_secret) {
+                // Rotate the session before storing the pending authenticated identity.
+                $request->session()->regenerate();
                 // HOLDING PATTERN: Put their ID in the session, but DO NOT log them in yet.
                 $request->session()->put('2fa:user:id', $user->id);
                 $request->session()->put('2fa:auth:remember', $request->boolean('remember'));
