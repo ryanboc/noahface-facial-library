@@ -117,7 +117,9 @@ class Employee extends Model
 
     /**
      * Resolve the award category for a shift. Under the Poultry Processing
-     * Award, a night shift finishes after midnight and no later than 8:00am.
+     * Award, afternoon and night shifts share a differential. An afternoon
+     * shift finishes from 5:00pm through midnight; a night shift finishes
+     * after midnight and no later than 8:00am.
      * Weekend penalties take precedence over the weekday night differential.
      */
     private function rateCategory($startDate, $endDate = null): string
@@ -132,8 +134,15 @@ class Employee extends Model
         $end = \Carbon\Carbon::parse($endDate);
         $midnightAfterStart = $start->copy()->addDay()->startOfDay();
         $nightShiftCutoff = $midnightAfterStart->copy()->setTime(8, 0);
+        $afternoonShiftStart = $start->copy()->setTime(17, 0);
+        $midnightAtEndOfStartDay = $start->copy()->endOfDay();
 
-        return $end->gt($midnightAfterStart) && $end->lte($nightShiftCutoff)
+        $isAfternoonShift = $end->gte($afternoonShiftStart)
+            && $end->lte($midnightAtEndOfStartDay);
+        $isNightShift = $end->gt($midnightAfterStart)
+            && $end->lte($nightShiftCutoff);
+
+        return $isAfternoonShift || $isNightShift
             ? 'Night'
             : $dayName;
     }

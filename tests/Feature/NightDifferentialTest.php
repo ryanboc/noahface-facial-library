@@ -36,6 +36,18 @@ class NightDifferentialTest extends TestCase
         $this->assertSame(34.5, $rate['final_rate']);
     }
 
+    public function test_a_weekday_afternoon_shift_uses_the_same_differential(): void
+    {
+        $employee = $this->employeeWithRates('Casual', [
+            'Night' => '140%',
+        ]);
+
+        $rate = $employee->getRateDetails('2026-09-04 16:51:00', '2026-09-04 22:01:00');
+
+        $this->assertSame('Night (140%)', $rate['label']);
+        $this->assertSame(42.0, $rate['final_rate']);
+    }
+
     public function test_a_shift_finishing_after_the_night_cutoff_uses_the_ordinary_rate(): void
     {
         $employee = $this->employeeWithRates('Full Time/Part Time', [
