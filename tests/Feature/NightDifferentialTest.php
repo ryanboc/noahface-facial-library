@@ -48,6 +48,17 @@ class NightDifferentialTest extends TestCase
         $this->assertSame(42.0, $rate['final_rate']);
     }
 
+    public function test_night_differential_does_not_fall_back_to_ordinary_when_award_rate_is_missing(): void
+    {
+        $employee = $this->employeeWithRates('Casual', []);
+
+        $rate = $employee->getRateDetails('2026-09-04 16:51:00', '2026-09-04 22:02:00');
+
+        $this->assertSame('Night (140%)', $rate['label']);
+        $this->assertSame(1.4, $rate['multiplier']);
+        $this->assertSame(42.0, $rate['final_rate']);
+    }
+
     public function test_a_shift_finishing_after_the_night_cutoff_uses_the_ordinary_rate(): void
     {
         $employee = $this->employeeWithRates('Full Time/Part Time', [

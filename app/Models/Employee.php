@@ -82,6 +82,20 @@ class Employee extends Model
             ->where('category', $category)
             ->first();
 
+        // Apply the Australian afternoon/night differential even when an
+        // employee's award was created before the Night rate was seeded.
+        if (! $rule && $category === 'Night') {
+            $isCasual = str_contains($this->employment_type, 'Casual');
+            $rawString = $isCasual ? '140%' : '115%';
+            $multiplier = $isCasual ? 1.4 : 1.15;
+
+            return [
+                'label' => "Night ({$rawString})",
+                'multiplier' => $multiplier,
+                'final_rate' => ($this->base_rate ?? 25.00) * $multiplier,
+            ];
+        }
+
         // 2. If no specific day rule is found (e.g., it's a Monday-Friday),
         // we need to decide on a default.
         // Since your seeder doesn't have "Ordinary" rows yet, we will fallback to a default.
