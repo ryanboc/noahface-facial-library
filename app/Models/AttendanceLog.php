@@ -12,17 +12,26 @@ class AttendanceLog extends Model
         'clock_time', 
         'event_type', 
         'location', 
-        'raw_payload'
+        'raw_payload',
+        'is_manual',
+        'adjustment_reason',
+        'adjusted_by',
     ];
 
     protected $casts = [
         'clock_time' => 'datetime',
         'raw_payload' => 'array',
+        'is_manual' => 'boolean',
     ];
 
     // Link back to Employee so we can access their Award later
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function adjustedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'adjusted_by');
     }
 }

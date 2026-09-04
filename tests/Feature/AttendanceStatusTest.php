@@ -40,6 +40,50 @@ class AttendanceStatusTest extends TestCase
             ->assertSeeInOrder(['Not clocked in today', 'Absent Person']);
     }
 
+    public function test_manager_can_add_an_audited_correction_without_changing_original_logs(): void
+    {
+        $manager = User::factory()->create(['role' => 'manager']);
+        $award = Award::create(['name' => 'Test Award']);
+        $employee = $this->employee('Forgotten Clockout', 'forgot@example.com', 'NF-5', $award);
+        $this->log($employee, 'Clock In', 8);
+
+        $this->actingAs($manager)->post(route('attendance.adjustments.store'), [
+            'employee_id' => $employee->id,
+            'event_type' => 'Clock Out',
+            'clock_time' => now()->subMinute()->format('Y-m-d H:i:s'),
+            'adjustment_reason' => 'Employee forgot to clock out',
+        ])->assertRedirect(route('attendance.status'));
+
+        $this->assertDatabaseCount('attendance_logs', 2);
+        $this->assertDatabaseHas('attendance_logs', [
+            'employee_id' => $employee->id,
+            'event_type' => 'Clock Out',
+            'is_manual' => true,
+            'adjustment_reason' => 'Employee forgot to clock out',
+            'adjusted_by' => $manager->id,
+        ]);
+    }
+
+    public function test_timesheet_deducts_completed_breaks_and_flags_incomplete_shifts(): void
+    {
+        $manager = User::factory()->create(['role' => 'manager']);
+        $award = Award::create(['name' => 'Test Award']);
+        $complete = $this->employee('Complete Shift', 'complete@example.com', 'NF-6', $award);
+        $incomplete = $this->employee('Incomplete Shift', 'incomplete@example.com', 'NF-7', $award);
+
+        $this->log($complete, 'Clock In', 8);
+        $this->log($complete, 'Start Break', 12);
+        AttendanceLog::create(['employee_id' => $complete->id, 'clock_time' => today()->setTime(12, 30), 'event_type' => 'End Break']);
+        $this->log($complete, 'Clock Out', 17);
+        $this->log($incomplete, 'Clock In', 8);
+
+        $this->actingAs($manager)->get(route('attendance.timesheet'))
+            ->assertOk()
+            ->assertSee('8.50 hrs')
+            ->assertSee('0h 30m')
+            ->assertSee('Shift was started but never clocked out.');
+    }
+
     private function employee(string $name, string $email, string $noahfaceId, Award $award): Employee
     {
         return Employee::create([

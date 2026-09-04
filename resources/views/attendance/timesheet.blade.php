@@ -58,6 +58,23 @@
     </div>
 
     {{-- TABLE --}}
+    @if(count($exceptions))
+        <div class="mb-6 overflow-hidden rounded-lg border border-red-200 bg-white shadow-sm">
+            <div class="border-b border-red-100 bg-red-50 px-5 py-4">
+                <h2 class="font-bold text-red-900">Needs review ({{ count($exceptions) }})</h2>
+                <p class="mt-1 text-sm text-red-700">Pay is not calculated for these shifts until the missing attendance event is corrected.</p>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @foreach($exceptions as $exception)
+                    <div class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div><span class="font-bold text-slate-900">{{ $exception['employee'] }}</span><span class="ml-2 text-sm text-slate-500">{{ $exception['date'] }} from {{ $exception['start'] }}</span><p class="text-sm font-semibold text-red-600">{{ $exception['issue'] }}</p></div>
+                        <a href="{{ route('attendance.status') }}#correction" class="text-sm font-bold text-blue-600 hover:text-blue-800">Add correction</a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="min-w-full leading-normal">
     <thead>
@@ -66,6 +83,7 @@
             <th class="py-3 px-5 text-left">Employee</th>
             <th class="py-3 px-5 text-left">Shift Time</th>
             <th class="py-3 px-5 text-left">Duration</th>
+            <th class="py-3 px-5 text-left">Break</th>
             <th class="py-3 px-5 text-left">Details</th> <th class="py-3 px-5 text-left">Rate</th>
             <th class="py-3 px-5 text-left">Total Pay</th>
         </tr>
@@ -79,6 +97,7 @@
                     {{ $sheet['start'] }} - {{ $sheet['end'] }}
                 </td>
                 <td class="py-4 px-5">{{ $sheet['duration'] }}</td>
+                <td class="py-4 px-5">{{ $sheet['break_duration'] }}</td>
                 
                 <td class="py-4 px-5">
                     <div class="text-sm text-gray-900 font-semibold">{{ $sheet['device'] }}</div>
@@ -98,7 +117,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center py-8 text-gray-500">
+                <td colspan="8" class="text-center py-8 text-gray-500">
                     No shifts found for this company and period.
                 </td>
             </tr>
